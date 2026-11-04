@@ -64,15 +64,15 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <aside>
   <div class="logo">SICOPE<small>Control de planta y embutidos</small></div>
   <nav>
-    <a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Inicio</a>
-    <section><b>Operación</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Programación</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Pedidos</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Despacho</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Consumos</a></section>
-    <section><b>Inventarios y catálogo</b><a class="on" aria-current="page">Recepción</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Inventario MP</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Inventario PT</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Almacenes e inventarios</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Productos</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Fórmulas</a></section>
-    <section><b>Gestión</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Oficina</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Ajustes</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Roles y tareas</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Usuarios</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Auditoría</a></section>
+    <a href="#/inicio" data-v="inicio">Inicio</a>
+    <section><b>Operación</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Programación</a><a href="#/pedidos" data-v="pedidos">Pedidos</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Despacho</a><a href="#/consumos" data-v="consumos">Consumos</a></section>
+    <section><b>Inventarios y catálogo</b><a href="#/recepcion" data-v="recepcion">Recepción</a><a href="#/inventario-mp" data-v="inventario-mp">Inventario MP</a><a href="#/inventario-pt" data-v="inventario-pt">Inventario PT</a><a href="#/almacenes" data-v="almacenes">Almacenes e inventarios</a><a href="#/productos" data-v="productos">Productos</a><a href="#/formulas" data-v="formulas">Fórmulas</a></section>
+    <section><b>Gestión</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Oficina</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Ajustes</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Roles y tareas</a><a href="#/usuarios" data-v="usuarios">Usuarios</a><a href="#/auditoria" data-v="auditoria">Auditoría</a></section>
   </nav>
 </aside>
 <main>
   <div class="top">
-    <h1>Recepción de materia prima</h1>
+    <h1 id="titulo">Recepción de materia prima</h1>
     <div class="row" style="align-items:center">
       <span id="estado" class="st">Cargando base de datos…</span>
       <button id="bdescargar" class="sec sm" hidden>Descargar sicope.db</button>
@@ -85,6 +85,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div id="app" hidden>
+  <div id="v-recepcion">
   <form class="card" id="form" autocomplete="off">
     <h2 id="ftitulo">Nueva recepción</h2>
     <div class="grid">
@@ -132,6 +133,11 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
         <tbody id="tb"></tbody>
       </table>
     </div>
+  </section>
+  </div>
+  <section id="v-lista" class="card" hidden>
+    <div class="row" style="margin-bottom:10px;align-items:center"><input id="l-q" placeholder="Filtrar en esta lista" style="max-width:340px"><span class="st" id="l-cuenta"></span></div>
+    <div class="tw"><table><thead id="l-head"></thead><tbody id="l-body"></tbody></table></div>
   </section>
   </div>
 </main>
@@ -308,6 +314,67 @@ function buscar() {
     || '<tr><td colspan="14" style="text-align:center;color:var(--mute);padding:20px">No hay recepciones con esos filtros.</td></tr>';
 }
 
+/* Vistas de consulta */
+const L = (sql, cols) => ({sql, cols});
+const VISTAS = {
+  inicio: {t: 'Inicio', ...L(`SELECT 'Productos activos' AS i, COUNT(*) AS v FROM productos WHERE activo=1
+    UNION ALL SELECT 'Recepciones de MP registradas', COUNT(*) FROM entradas_mp
+    UNION ALL SELECT 'Lotes de MP con saldo', COUNT(*) FROM entradas_mp WHERE saldo>0
+    UNION ALL SELECT 'Lotes de MP que vencen en 30 días', COUNT(*) FROM entradas_mp WHERE saldo>0 AND fecha_vencimiento BETWEEN date('now') AND date('now','+30 day')
+    UNION ALL SELECT 'Lotes de MP vencidos con saldo', COUNT(*) FROM entradas_mp WHERE saldo>0 AND fecha_vencimiento < date('now')
+    UNION ALL SELECT 'Pedidos sin entregar', COUNT(*) FROM pedidos WHERE estado IN ('PENDIENTE','EN PROCESO','PARCIAL','LISTO')`,
+    [['i', 'Indicador'], ['v', 'Valor', 'n']])},
+  pedidos: {t: 'Pedidos', ...L(`SELECT consecutivo, fecha, cliente, area, estado, fecha_requerida, observacion FROM pedidos ORDER BY id DESC`,
+    [['consecutivo', 'Consecutivo'], ['fecha', 'Fecha', 'd'], ['cliente', 'Cliente'], ['area', 'Área'], ['estado', 'Estado'], ['fecha_requerida', 'Fecha requerida', 'd'], ['observacion', 'Observación']])},
+  consumos: {t: 'Consumos', ...L(`SELECT o.consecutivo AS orden, o.fecha, pt.nombre AS terminado, o.lote AS lote_orden, p.sku, p.nombre AS mp, e.lote AS lote_mp, c.cantidad, p.unidad
+    FROM consumos c JOIN ordenes_produccion o ON o.id=c.orden_id JOIN entradas_mp e ON e.id=c.entrada_id JOIN productos p ON p.id=e.producto_id JOIN productos pt ON pt.id=o.producto_id ORDER BY c.id DESC`,
+    [['orden', 'Orden'], ['fecha', 'Fecha', 'd'], ['terminado', 'Producto terminado'], ['lote_orden', 'Lote orden'], ['sku', 'SKU MP'], ['mp', 'Materia prima'], ['lote_mp', 'Lote MP'], ['cantidad', 'Cantidad', 'n'], ['unidad', 'Unidad']])},
+  'inventario-mp': {t: 'Inventario MP', ...L(`SELECT p.sku, p.nombre, p.categoria, p.unidad, e.lote, e.fecha_vencimiento, e.saldo, a.nombre AS almacen
+    FROM entradas_mp e JOIN productos p ON p.id=e.producto_id LEFT JOIN almacenes a ON a.id=e.almacen_id WHERE e.saldo>0 ORDER BY e.fecha_vencimiento IS NULL, e.fecha_vencimiento, e.id`,
+    [['sku', 'SKU'], ['nombre', 'Producto'], ['categoria', 'Categoría'], ['unidad', 'Unidad'], ['lote', 'Lote'], ['fecha_vencimiento', 'Vencimiento', 'd'], ['saldo', 'Saldo', 'n'], ['almacen', 'Almacén']])},
+  'inventario-pt': {t: 'Inventario PT', ...L(`SELECT p.sku, p.nombre, p.unidad, b.lote, b.fecha_vencimiento, b.saldo, b.consecutivo, b.origen, a.nombre AS almacen
+    FROM bodega_lotes_pt b JOIN productos p ON p.id=b.producto_id LEFT JOIN almacenes a ON a.id=b.almacen_id WHERE b.saldo>0 ORDER BY b.fecha_vencimiento IS NULL, b.fecha_vencimiento, b.id`,
+    [['sku', 'SKU'], ['nombre', 'Producto'], ['unidad', 'Unidad'], ['lote', 'Lote'], ['fecha_vencimiento', 'Vencimiento', 'd'], ['saldo', 'Saldo', 'n'], ['consecutivo', 'Consecutivo'], ['origen', 'Origen'], ['almacen', 'Almacén']])},
+  almacenes: {t: 'Almacenes e inventarios', ...L(`SELECT m.fecha, t.nombre AS tipo, ao.nombre AS origen, ad.nombre AS destino, p.sku, p.nombre AS producto, m.lote, m.cantidad, m.unidad, m.referencia, m.motivo
+    FROM movimientos_almacen m JOIN productos p ON p.id=m.producto_id LEFT JOIN almacenes ao ON ao.id=m.almacen_origen_id LEFT JOIN almacenes ad ON ad.id=m.almacen_destino_id LEFT JOIN tipos_movimiento t ON t.id=m.tipo_movimiento_id ORDER BY m.id DESC LIMIT 1000`,
+    [['fecha', 'Fecha', 'd'], ['tipo', 'Movimiento'], ['origen', 'Origen'], ['destino', 'Destino'], ['sku', 'SKU'], ['producto', 'Producto'], ['lote', 'Lote'], ['cantidad', 'Cantidad', 'n'], ['unidad', 'Unidad'], ['referencia', 'Referencia'], ['motivo', 'Motivo']])},
+  productos: {t: 'Productos', ...L(`SELECT sku, nombre, categoria, unidad, subcategoria, marca, presentacion, stock_minimo, vida_util_dias, CASE activo WHEN 1 THEN 'Sí' ELSE 'No' END AS activo FROM productos ORDER BY sku`,
+    [['sku', 'SKU'], ['nombre', 'Nombre'], ['categoria', 'Categoría'], ['unidad', 'Unidad'], ['subcategoria', 'Subcategoría'], ['marca', 'Marca'], ['presentacion', 'Presentación'], ['stock_minimo', 'Stock mínimo', 'n'], ['vida_util_dias', 'Vida útil (días)', 'n'], ['activo', 'Activo']])},
+  formulas: {t: 'Fórmulas', ...L(`SELECT pt.sku AS sku_pt, pt.nombre AS terminado, f.version, pi.sku AS sku_i, pi.nombre AS ingrediente, fi.cantidad_100kg, pi.unidad, fi.tipo_consumo
+    FROM formula_items fi JOIN formulas f ON f.id=fi.formula_id JOIN productos pt ON pt.id=f.producto_id JOIN productos pi ON pi.id=fi.producto_id WHERE f.activa=1 ORDER BY pt.sku, fi.id`,
+    [['sku_pt', 'SKU'], ['terminado', 'Producto terminado'], ['version', 'Versión'], ['sku_i', 'SKU ingrediente'], ['ingrediente', 'Ingrediente'], ['cantidad_100kg', 'Cantidad por 100 kg', 'n'], ['unidad', 'Unidad'], ['tipo_consumo', 'Consumo']])},
+  usuarios: {t: 'Usuarios', ...L(`SELECT id, username, rol, CASE activo WHEN 1 THEN 'Sí' ELSE 'No' END AS activo FROM usuarios ORDER BY id`,
+    [['id', 'Id'], ['username', 'Usuario'], ['rol', 'Rol'], ['activo', 'Activo']])},
+  auditoria: {t: 'Auditoría', ...L(`SELECT a.fecha, u.username AS usuario, a.accion, a.entidad, a.entidad_id, a.detalle FROM auditoria a LEFT JOIN usuarios u ON u.id=a.usuario_id ORDER BY a.id DESC LIMIT 1000`,
+    [['fecha', 'Fecha', 'd'], ['usuario', 'Usuario'], ['accion', 'Acción'], ['entidad', 'Entidad'], ['entidad_id', 'Id'], ['detalle', 'Detalle']])}
+};
+function lista(k) {
+  const v = VISTAS[k], rows = q(v.sql);
+  $('l-head').innerHTML = '<tr>' + v.cols.map(([, l, t]) => `<th${t === 'n' ? ' class="n"' : ''}>${l}</th>`).join('') + '</tr>';
+  $('l-body').innerHTML = rows.map(r => `<tr data-t="${esc(Object.values(r).map(x => x ?? '').join(' ').toLowerCase())}">` +
+    v.cols.map(([c, , t]) => `<td${t === 'n' ? ' class="n"' : ''}>${t === 'n' ? num(r[c]) : t === 'd' ? dmy(r[c]) : esc(r[c])}</td>`).join('') + '</tr>').join('')
+    || '<tr><td colspan="99" style="text-align:center;color:var(--mute);padding:20px">No hay datos en esta lista.</td></tr>';
+  $('l-q').value = ''; filtrar();
+}
+function filtrar() {
+  const t = $('l-q').value.trim().toLowerCase(); let n = 0;
+  document.querySelectorAll('#l-body tr[data-t]').forEach(tr => { const s = !t || tr.dataset.t.includes(t); tr.hidden = !s; if (s) n++; });
+  $('l-cuenta').textContent = `${n} registros`;
+}
+function route() {
+  const k = location.hash.replace('#/', '') || 'inicio', rec = k === 'recepcion', v = VISTAS[k];
+  if (!rec && !v) { location.hash = '#/inicio'; return; }
+  $('v-recepcion').hidden = !rec; $('v-lista').hidden = rec;
+  $('titulo').textContent = rec ? 'Recepción de materia prima' : v.t;
+  document.querySelectorAll('nav a[data-v]').forEach(a => {
+    const on = a.dataset.v === k; a.classList.toggle('on', on);
+    on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+  });
+  if (!rec) lista(k);
+}
+$('l-q').addEventListener('input', filtrar);
+window.addEventListener('hashchange', () => db && route());
+
 /* Arranque */
 function abrir(buf) {
   try {
@@ -318,7 +385,7 @@ function abrir(buf) {
   userId = u ? u.id : 1;
   $('f-cat').innerHTML = '<option value="">Todas</option>' + q('SELECT nombre FROM categorias ORDER BY nombre').map(c => `<option>${esc(c.nombre)}</option>`).join('');
   $('abrir').hidden = true; $('app').hidden = false;
-  setDirty(false); limpiar(); buscar();
+  setDirty(false); limpiar(); buscar(); route();
 }
 ac($('prod'), t => buscarProd(t, true), p => setProd(p));
 ac($('f-prod'), t => buscarProd(t, false), p => { $('f-prod').dataset.sku = p ? p.sku : ''; });
