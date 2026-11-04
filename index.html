@@ -1,168 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Recepción MP</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Segoe UI,sans-serif;
+    background:#f1f5f9;
+}
+
+.layout{
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:250px;
+    background:#0f172a;
+    color:white;
+    padding:20px;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
+
+.menu a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:5px;
+}
+
+.menu a:hover{
+    background:#1e293b;
+}
+
+.content{
+    flex:1;
+    padding:25px;
+}
+
+.title{
+    margin-bottom:20px;
+}
+
+.title h1{
+    margin:0;
+}
+
+.kpis{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.kpi{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 5px rgba(0,0,0,.08);
+}
+
+.kpi h2{
+    margin:0;
+    color:#2563eb;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 5px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.form{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(240px,1fr));
+    gap:15px;
+}
+
+label{
+    display:flex;
+    flex-direction:column;
+}
+
+input,
+select{
+    padding:10px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+}
+
+button{
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0f172a;
+    color:white;
+}
+
+th,td{
+    padding:10px;
+    border:1px solid #e5e7eb;
+}
+
+tr:nth-child(even){
+    background:#f8fafc;
+}
+
+</style>
+
+</head>
+
 <body>
 
 <div class="layout">
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-        <div class="logo">
-            ERP-WEB
-        </div>
+<div class="logo">
+SICOPE
+</div>
 
-        <a href="#">📊 Dashboard</a>
-        <a href="#">📥 Recepciones MP</a>
-        <a href="#">📦 Inventario</a>
-        <a href="#">📑 Kardex</a>
-        <a href="#">🧪 Formulación</a>
-        <a href="#">🏭 Producción</a>
-        <a href="#">🚚 Despachos</a>
-        <a href="#">👥 Usuarios</a>
+<div class="menu">
 
-    </aside>
-
-    <main class="content">
-
-        <div class="header">
-
-            <div>
-                <h1>Recepción de Materia Prima</h1>
-                <span>
-                    Sistema ERP Web
-                </span>
-            </div>
-
-        </div>
-
-        <!-- DASHBOARD -->
-
-        <div class="stats">
-
-            <div class="stat">
-                <h2 id="kpiRecepciones">0</h2>
-                <span>Recepciones</span>
-            </div>
-
-            <div class="stat">
-                <h2 id="kpiCantidad">0</h2>
-                <span>Cantidad Total</span>
-            </div>
-
-            <div class="stat">
-                <h2 id="kpiProductos">0</h2>
-                <span>Productos</span>
-            </div>
-
-            <div class="stat">
-                <h2 id="kpiProveedores">0</h2>
-                <span>Proveedores</span>
-            </div>
-
-        </div>
-
-        <!-- FORMULARIO -->
-
-        <div class="card">
-
-            <h3>Nueva Recepción</h3>
-
-            <div class="form">
-
-                <label>
-                    SKU
-                    <input id="sku">
-                </label>
-
-                <label>
-                    Producto
-                    <input id="producto">
-                </label>
-
-                <label>
-                    Categoría
-                    <input id="categoria">
-                </label>
-
-                <label>
-                    Proveedor
-                    <input id="proveedor">
-                </label>
-
-                <label>
-                    Factura
-                    <input id="factura">
-                </label>
-
-                <label>
-                    Lote
-                    <input id="lote">
-                </label>
-
-                <label>
-                    Fecha Vencimiento
-                    <input id="vence" type="date">
-                </label>
-
-                <label>
-                    Temperatura
-                    <input id="temp" type="number">
-                </label>
-
-                <label>
-                    Cantidad
-                    <input id="cantidad" type="number">
-                </label>
-
-            </div>
-
-            <br>
-
-            <button onclick="guardar()">
-                Registrar Recepción
-            </button>
-
-        </div>
-
-        <!-- BUSQUEDA -->
-
-        <div class="card">
-
-            <h3>Buscar</h3>
-
-            <input
-                id="buscar"
-                placeholder="Buscar por producto, SKU, proveedor o lote..."
-            >
-
-        </div>
-
-        <!-- TABLA -->
-
-        <div class="card">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-                        <th>ID</th>
-                        <th>SKU</th>
-                        <th>Producto</th>
-                        <th>Proveedor</th>
-                        <th>Lote</th>
-                        <th>Cantidad</th>
-                    </tr>
-
-                </thead>
-
-                <tbody id="tabla">
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </main>
+<a href="#">Dashboard</a>
+<a href="#">Recepción MP</a>
+<a href="#">Inventario</a>
+<a href="#">Kardex</a>
+<a href="#">Formulación</a>
+<a href="#">Producción</a>
+<a href="#">Despacho</a>
+<a href="#">Usuarios</a>
 
 </div>
 
+</aside>
+
+<main class="content">
+
+<div class="title">
+
+<h1>Recepción de Materia Prima</h1>
+
+<p>
+Registro de productos recibidos.
+</p>
+
+</div>
+
+<div class="kpis">
+
+<div class="kpi">
+<h2 id="kpiRecepciones">0</h2>
+<div>Recepciones</div>
+</div>
+
+<div class="kpi">
+<h2 id="kpiProveedores">0</h2>
+<div>Proveedores</div>
+</div>
+
+<div class="kpi">
+<h2 id="kpiCantidad">0</h2>
+<div>Cantidad Total</div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Nueva Recepción</h3>
+
+<div class="form">
+
+<label>
+Producto ID
+<input id="producto_id">
+</label>
+
+<label>
+Proveedor
+<input id="proveedor">
+</label>
+
+<label>
+Factura
+<input id="factura">
+</label>
+
+<label>
+Lote
+<input id="lote">
+</label>
+
+<label>
+Fecha Vencimiento
+<input id="fecha_vencimiento" type="date">
+</label>
+
+<label>
+Temperatura °C
+<input id="temperatura" type="number" step="0.01">
+</label>
+
+<label>
+Tipo Empaque
+<select id="tipo_empaque">
+
+<option value="">
+Seleccione...
+</option>
+
+<option>Cartón</option>
+<option>Caja plástica</option>
+<option>Sacos</option>
+<option>Bolsas</option>
+
+</select>
+</label>
+
+<label>
+Cantidad
+<input id="cantidad" type="number" step="0.01">
+</label>
+
+</div>
+
+<br>
+
+<button onclick="guardar()">
+Registrar Recepción
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Buscar Recepciones</h3>
+
+<div class="form">
+
+<input
+id="buscar"
+placeholder="Buscar por proveedor, lote o factura"
+onkeyup="filtrar()">
+
+</div>
+
+</div>
+
+<div class="card">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Producto</th>
+<th>Proveedor</th>
+<th>Factura</th>
+<th>Lote</th>
+<th>Vence</th>
+<th>Temp</th>
+<th>Empaque</th>
+<th>Cantidad</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tabla">
+
+</tbody>
+
+</table>
+
+</div>
+
+</main>
+
+</div>
+
+<script>
+
+let datos=[];
+
+function guardar(){
+
+    const fila={
+
+        producto_id:
+        document.getElementById('producto_id').value,
+
+        proveedor:
+        document.getElementById('proveedor').value,
+
+        factura:
+        document.getElementById('factura').value,
+
+        lote:
+        document.getElementById('lote').value,
+
+        fecha_vencimiento:
+        document.getElementById('fecha_vencimiento').value,
+
+        temperatura:
+        document.getElementById('temperatura').value,
+
+        tipo_empaque:
+        document.getElementById('tipo_empaque').value,
+
+        cantidad:
+        document.getElementById('cantidad').value
+
+    };
+
+    datos.push(fila);
+
+    render();
+
+}
+
+function render(){
+
+    let html='';
+
+    datos.forEach(x=>{
+
+        html+=`
+
+        <tr>
+
+        <td>${x.producto_id}</td>
+        <td>${x.proveedor}</td>
+        <td>${x.factura}</td>
+        <td>${x.lote}</td>
+        <td>${x.fecha_vencimiento}</td>
+        <td>${x.temperatura}</td>
+        <td>${x.tipo_empaque}</td>
+        <td>${x.cantidad}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+    document.getElementById('tabla').innerHTML=html;
+
+    actualizarKPIs();
+
+}
+
+function actualizarKPIs(){
+
+    document.getElementById('kpiRecepciones')
+    .textContent=datos.length;
+
+    document.getElementById('kpiProveedores')
+    .textContent=
+    new Set(
+        datos.map(x=>x.proveedor)
+    ).size;
+
+    let total=0;
+
+    datos.forEach(x=>{
+        total+=Number(x.cantidad||0);
+    });
+
+    document.getElementById('kpiCantidad')
+    .textContent=total;
+
+}
+
+function filtrar(){
+
+    const txt=
+    document.getElementById('buscar')
+    .value
+    .toLowerCase();
+
+    document
+    .querySelectorAll('#tabla tr')
+    .forEach(tr=>{
+
+        tr.style.display=
+
+        tr.innerText
+        .toLowerCase()
+        .includes(txt)
+
+        ? ''
+        : 'none';
+
+    });
+
+}
+
+</script>
+
 </body>
+
+</html>
