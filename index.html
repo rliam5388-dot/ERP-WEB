@@ -1,64 +1,246 @@
-{% extends "base.html" %}
-{% block title %}Recepción{% endblock %}
-{% block content %}
-<h1>Recepción de materia prima</h1><p class="sub">Registra lo que llega a la planta y consúltalo cuando lo necesites.</p>
-<div class="card" id="frm"><h3>Nueva recepción</h3>
- <div class="form">
-  <label>Producto (SKU o nombre)<div id="prod"></div></label>
-  <label>Proveedor<input id="prov"></label>
-  <label>Factura<input id="fac"></label>
-  <label>Lote<input id="lote"><button type="button" class="sec sm" onclick="generarLote('lote')">Generar lote</button></label>
-  <label>Fecha de vencimiento<input id="venc" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
-  <label>Temperatura (°C)<input id="temp" type="number" step="any"></label>
-  <label>Tipo de empaque<input id="emp" placeholder="saco, caja, cuñete..."></label>
-  <label><span id="lblc">Cantidad</span><input id="cant" type="number" step="any" min="0"></label>
- </div><div class="bar"><button onclick="guardar()">Registrar recepción</button><span class="sub" style="margin:0">Enter para registrar</span></div></div>
+<!DOCTYPE html>
+<html lang="es">
 
-<div class="card" id="bus"><h3>Buscar recepciones</h3>
- <div class="form">
-  <label>Proveedor<input id="f_prov"></label><label>Lote<input id="f_lote"></label>
-  <label>Producto o SKU<input id="f_prod"></label>
-  <label>Categoría<select id="f_cat"><option value="">Todas</option></select></label>
-  <label>Recibido desde<input id="f_des" inputmode="numeric" placeholder="dd/mm/yyyy"></label><label>Recibido hasta<input id="f_has" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
- </div>
- <div class="bar"><button onclick="buscar()">Buscar</button><button class="sec" onclick="limpiar()">Limpiar</button>
- <button class="sec" onclick="excel()">⬇ Descargar Excel</button><span class="sub" style="margin:0" id="cuenta"></span></div></div>
-<div class="card"><table><thead><tr><th>Consecutivo</th><th>Fecha</th><th>Producto</th><th>Categoría</th><th>Proveedor</th><th>Factura</th><th>Lote</th><th>Vence</th><th>Cantidad</th><th>Saldo</th><th>Temp.</th><th>Recibió</th></tr></thead><tbody id="t"></tbody></table></div>
-{% endblock %}
-{% block script %}
-let prods=[],sb;
-function uni(p){ $('lblc').textContent='Cantidad'+(p?' ('+p.unidad+')':''); }
-async function init(){
-  const [ps,cs]=await Promise.all([datos('/productos'),datos('/productos/categorias')]); if(!ps||!cs)return;
-  prods=ps.filter(p=>p.categoria!==TERMINADO);
-  sb=buscador('prod',prods,{alElegir:uni}); sinPermiso('recepcion','frm');
-  $('f_cat').innerHTML='<option value="">Todas</option>'+cs.filter(c=>c.nombre!==TERMINADO).map(c=>`<option>${esc(c.nombre)}</option>`).join('');
-  buscar();
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Recepción MP</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f4f4f4;
 }
-function filtros(){
-  const desde=fechaAISO($('f_des').value),hasta=fechaAISO($('f_has').value);
-  if(($('f_des').value&&!desde)||($('f_has').value&&!hasta)){toast('Escribe las fechas como dd/mm/yyyy','warn');return null;}
-  const f={proveedor:$('f_prov').value.trim(),lote:$('f_lote').value.trim(),producto:$('f_prod').value.trim(),categoria:$('f_cat').value,desde,hasta};
-  return new URLSearchParams(Object.entries(f).filter(([k,v])=>v)).toString();
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:8px;
+    box-shadow:0 2px 4px rgba(0,0,0,.1);
+    margin-bottom:20px;
 }
-async function buscar(){
-  const q=filtros();if(q===null)return;
-  const rows=await datos('/entrada-mp?'+q); if(!rows)return;
-  $('cuenta').textContent=rows.length+(rows.length===1?' recepción':' recepciones')+(rows.length>=1000?' (mostrando las 1000 más recientes)':'');
-  $('t').innerHTML=filas(rows,e=>`<tr><td>${esc(e.consecutivo)}</td><td>${esc(formatoFecha(e.fecha))}</td><td>${esc(e.sku)} · ${esc(e.producto)}</td><td>${esc(e.categoria)}</td><td>${esc(e.proveedor)}</td><td>${esc(e.factura)}</td><td>${esc(e.lote)}</td><td>${esc(formatoFecha(e.vence))}</td><td>${e.cantidad} ${esc(e.unidad)}</td><td>${e.saldo}</td><td>${e.alerta_temp?badge((e.temperatura??'')+' °C','bad'):(e.temperatura??'—')}</td><td>${esc(e.recibio)}</td></tr>`,12,'No encontramos recepciones con esos filtros.');
+
+.form{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:10px;
 }
-function limpiar(){ ['f_prov','f_lote','f_prod','f_cat','f_des','f_has'].forEach(i=>$(i).value=''); buscar(); }
-function excel(){ descargar('/entrada-mp/exportar?'+filtros(),'recepciones.xlsx'); }
+
+label{
+    display:flex;
+    flex-direction:column;
+}
+
+input,select{
+    padding:8px;
+}
+
+button{
+    padding:10px 15px;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+}
+
+th{
+    background:#0d6efd;
+    color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Recepción de Materia Prima</h1>
+
+<div class="card">
+
+<h3>Nueva Recepción</h3>
+
+<div class="form">
+
+<label>
+Producto
+<select id="producto"></select>
+</label>
+
+<label>
+Proveedor
+<input id="proveedor">
+</label>
+
+<label>
+Lote
+<input id="lote">
+</label>
+
+<label>
+Cantidad
+<input id="cantidad" type="number">
+</label>
+
+</div>
+
+<br>
+
+<button onclick="guardar()">
+Registrar
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Recepciones</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Producto</th>
+<th>Proveedor</th>
+<th>Lote</th>
+<th>Cantidad</th>
+</tr>
+</thead>
+
+<tbody id="tabla">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+// CAMBIAR POR TU API
+const API =
+"https://TU-TUNEL.trycloudflare.com";
+
+async function cargarProductos(){
+
+    const r = await fetch(
+        API + "/productos"
+    );
+
+    const productos = await r.json();
+
+    let html = '';
+
+    productos.forEach(p=>{
+
+        html += `
+        <option value="${p.id}">
+            ${p.sku} - ${p.nombre}
+        </option>
+        `;
+
+    });
+
+    document
+        .getElementById('producto')
+        .innerHTML = html;
+}
+
+async function cargarRecepciones(){
+
+    const r = await fetch(
+        API + "/entrada-mp"
+    );
+
+    const datos = await r.json();
+
+    let html = '';
+
+    datos.forEach(x=>{
+
+        html += `
+        <tr>
+            <td>${x.id}</td>
+            <td>${x.producto}</td>
+            <td>${x.proveedor}</td>
+            <td>${x.lote}</td>
+            <td>${x.cantidad}</td>
+        </tr>
+        `;
+
+    });
+
+    document
+      .getElementById('tabla')
+      .innerHTML = html;
+
+}
+
 async function guardar(){
-  const vencimiento=fechaAISO($('venc').value);
-  const b={producto_id:(sb.get()||{}).id||0,proveedor:$('prov').value.trim(),factura:$('fac').value.trim(),lote:$('lote').value.trim(),
-    fecha_vencimiento:vencimiento,temperatura:$('temp').value===''?null:+$('temp').value,tipo_empaque:$('emp').value.trim()||'N/A',cantidad:+$('cant').value};
-  if(!b.producto_id||!b.proveedor||!b.factura||!b.lote||!b.fecha_vencimiento||!(b.cantidad>0))
-    return toast('Completa producto, proveedor, factura, lote, vencimiento válido (dd/mm/yyyy) y cantidad mayor que 0','warn');
-  const d=await enviar('/entrada-mp',b); if(!d)return;
-  toast('¡Listo! Recepción '+d.consecutivo+' registrada.'+(d.alerta_temperatura?' ⚠ La temperatura superó el máximo permitido.':''),d.alerta_temperatura?'warn':'ok');
-  ['fac','lote','temp','cant'].forEach(i=>$(i).value=''); buscar(); $('lote').focus();
+
+    const body = {
+
+        producto_id:
+        document.getElementById('producto').value,
+
+        proveedor:
+        document.getElementById('proveedor').value,
+
+        lote:
+        document.getElementById('lote').value,
+
+        cantidad:
+        Number(
+            document.getElementById('cantidad').value
+        )
+
+    };
+
+    const r = await fetch(
+
+        API + "/entrada-mp",
+
+        {
+            method:'POST',
+            headers:{
+                'Content-Type':
+                'application/json'
+            },
+            body:JSON.stringify(body)
+        }
+
+    );
+
+    if(r.ok){
+
+        alert("Guardado");
+
+        cargarRecepciones();
+
+    }
+    else{
+
+        alert("Error");
+
+    }
+
 }
-enterPara('frm',guardar); enterPara('bus',buscar);
-init();
-{% endblock %}
+
+cargarProductos();
+cargarRecepciones();
+
+</script>
+
+</body>
+</html>
