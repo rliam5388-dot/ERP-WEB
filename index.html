@@ -1,527 +1,357 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SICOPE | Recepción MP</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SICOPE · Recepción MP</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
 <style>
-
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
-body{
-    font-family:Segoe UI,Arial,sans-serif;
-    background:#f4f6f9;
-}
-
-.layout{
-    display:flex;
-    min-height:100vh;
-}
-
-/* MENU */
-
-.sidebar{
-    width:240px;
-    background:#0f172a;
-    color:white;
-    padding:20px;
-}
-
-.logo{
-    font-size:24px;
-    font-weight:bold;
-    margin-bottom:30px;
-    text-align:center;
-}
-
-.menu a{
-    display:block;
-    color:white;
-    text-decoration:none;
-    padding:12px;
-    margin-bottom:5px;
-    border-radius:8px;
-}
-
-.menu a:hover{
-    background:#1e293b;
-}
-
-/* CONTENIDO */
-
-.content{
-    flex:1;
-    padding:25px;
-}
-
-h1{
-    color:#0f172a;
-}
-
-.sub{
-    color:#64748b;
-    margin-top:5px;
-    margin-bottom:20px;
-}
-
-.card{
-    background:white;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 2px 4px rgba(0,0,0,.08);
-}
-
-.card h3{
-    margin-bottom:15px;
-}
-
-/* FORM */
-
-.form{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:15px;
-}
-
-label{
-    display:flex;
-    flex-direction:column;
-    gap:5px;
-    font-weight:600;
-    font-size:14px;
-}
-
-input,
-select{
-    padding:10px;
-    border:1px solid #cbd5e1;
-    border-radius:8px;
-}
-
-input:focus,
-select:focus{
-    outline:none;
-    border-color:#2563eb;
-}
-
-/* LOTE */
-
-.lote-group{
-    display:flex;
-    gap:10px;
-}
-
-.lote-group input{
-    flex:1;
-}
-
-/* BOTONES */
-
-.actions{
-    margin-top:20px;
-    display:flex;
-    gap:10px;
-}
-
-button{
-    border:none;
-    padding:10px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-.primary{
-    background:#2563eb;
-    color:white;
-}
-
-.primary:hover{
-    background:#1d4ed8;
-}
-
-.secondary{
-    background:#e2e8f0;
-}
-
-/* TABLA */
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th{
-    background:#0f172a;
-    color:white;
-}
-
-th,td{
-    padding:10px;
-    border:1px solid #e5e7eb;
-}
-
-tr:nth-child(even){
-    background:#f8fafc;
-}
-
-/* INFO PRODUCTO */
-
-.info{
-    margin-top:15px;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    border-radius:8px;
-    padding:10px;
-    color:#334155;
-}
-
+:root{--ink:#1c2429;--mute:#66727a;--line:#d3d8d6;--bg:#f2f4f3;--side:#1d2a31;--acc:#0e6a6a;--warn:#b4690e;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:grid;grid-template-columns:208px 1fr;min-height:100vh}
+aside{background:var(--side);color:#c9d3d8;padding:16px 0;position:sticky;top:0;height:100vh}
+.logo{padding:0 18px 16px;font-weight:600;color:#fff;font-size:16px}
+.logo small{display:block;font-weight:400;color:#8fa1a9;font-size:12px}
+nav a{display:block;padding:9px 18px;color:inherit;text-decoration:none;border-left:3px solid transparent}
+nav a.on{background:#26363e;color:#fff;border-left-color:#3fb5a8}
+nav a.off{opacity:.45;cursor:not-allowed}
+main{padding:20px 24px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:20px;margin:0;font-weight:600}
+.st{color:var(--mute);font-size:13px}
+.st.dirty{color:var(--warn);font-weight:600}
+.card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
+h2{font-size:15px;margin:0 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.s2{grid-column:span 2}.s4{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mute);position:relative}
+input,select,button{font:inherit}
+input,select{padding:7px 9px;border:1px solid #b9c1c4;border-radius:4px;background:#fff;color:var(--ink);min-height:34px;width:100%}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button{padding:7px 14px;border:1px solid var(--acc);background:var(--acc);color:#fff;border-radius:4px;cursor:pointer;min-height:34px;white-space:nowrap}
+button.sec{background:#fff;color:var(--acc)}
+button.sm{padding:3px 9px;min-height:26px;font-size:12.5px}
+button.del{border-color:var(--bad);color:var(--bad);background:#fff}
+.row{display:flex;gap:6px}
+.actions{display:flex;gap:8px;align-items:end}
+.info{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px 12px;background:#eef2f1;border-radius:4px;padding:10px 12px;font-size:13px;color:var(--ink)}
+.info b{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.ac{position:absolute;top:100%;left:0;right:0;z-index:5;margin:2px 0 0;padding:0;list-style:none;background:#fff;border:1px solid #9fb0b5;border-radius:4px;max-height:260px;overflow:auto;box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.ac li{padding:7px 10px;cursor:pointer;color:var(--ink)}
+.ac li.on,.ac li:hover{background:#dff0ee}
+.ac li.none{color:var(--mute);cursor:default}
+.date{position:relative;display:flex;gap:4px}
+.date .cal{padding:0 9px;background:#fff;color:var(--acc)}
+.date .hid{position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;min-height:0;padding:0;border:0}
+.tw{overflow-x:auto;max-height:520px}
+table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}
+th,td{padding:7px 10px;border-bottom:1px solid #e3e7e5;text-align:left}
+th{background:#eef2f1;position:sticky;top:0;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.alert{color:var(--warn);font-weight:600}
+.hint{font-size:12.5px;color:var(--mute);margin:8px 0 0}
+#toast{position:fixed;right:20px;bottom:20px;padding:10px 16px;border-radius:4px;color:#fff;background:var(--acc);max-width:360px;z-index:20}
+#toast.err{background:var(--bad)}
+#abrir{border:1px dashed #9fb0b5;background:#fff;padding:24px;border-radius:6px;margin-bottom:16px}
+[hidden]{display:none!important}
+@media(max-width:860px){body{grid-template-columns:1fr}aside{position:static;height:auto;padding:10px 0 0}nav{display:flex;overflow-x:auto}nav a{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}nav a.on{border-bottom-color:#3fb5a8}.grid{grid-template-columns:1fr 1fr}.info{grid-template-columns:1fr 1fr}main{padding:14px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.s2{grid-column:auto}}
 </style>
-
 </head>
-
 <body>
-
-<div class="layout">
-
-    <aside class="sidebar">
-
-        <div class="logo">
-            SICOPE
-        </div>
-
-        <div class="menu">
-            <a href="#">Inicio</a>
-            <a href="#">Recepción MP</a>
-            <a href="#">Inventario</a>
-            <a href="#">Kardex</a>
-            <a href="#">Producción</a>
-            <a href="#">Despachos</a>
-            <a href="#">Reportes</a>
-            <a href="#">Configuración</a>
-        </div>
-
-    </aside>
-
-    <main class="content">
-
-        <h1>Recepción de Materia Prima</h1>
-
-        <p class="sub">
-            Registra lo que llega a la planta y consúltalo cuando lo necesites.
-        </p>
-
-        <!-- FORMULARIO -->
-
-        <div class="card">
-
-            <h3>Nueva Recepción</h3>
-
-            <div class="form">
-
-                <label>
-                    Producto (Código - Nombre)
-
-                    <input
-                        id="producto"
-                        list="productos"
-                        placeholder="Código o nombre">
-
-                </label>
-
-                <datalist id="productos">
-
-                    <!-- EJEMPLOS -->
-                    <option value="11882 - ALMIDON">
-                    <option value="11853 - Mort. Tocino Praga Granel">
-                    <option value="11861 - Chile Picante">
-
-                </datalist>
-
-                <label>
-                    Proveedor
-                    <input id="proveedor">
-                </label>
-
-                <label>
-                    Número Factura
-                    <input id="factura">
-                </label>
-
-                <label>
-
-                    Lote
-
-                    <div class="lote-group">
-
-                        <input id="lote">
-
-                        <button
-                            type="button"
-                            class="secondary"
-                            onclick="generarLote()">
-
-                            Generar
-
-                        </button>
-
-                    </div>
-
-                </label>
-
-                <label>
-                    Fecha Vencimiento
-
-                    <input
-                        id="vence"
-                        type="date">
-
-                </label>
-
-                <label>
-                    Temperatura (°C)
-
-                    <input
-                        id="temperatura"
-                        type="number"
-                        step="0.01">
-
-                </label>
-
-                <label>
-
-                    Tipo Empaque
-
-                    <select id="empaque">
-
-                        <option value="">
-                            Seleccione...
-                        </option>
-
-                        <option>Cartón</option>
-                        <option>Caja Plástica</option>
-                        <option>Sacos</option>
-                        <option>Bolsas</option>
-
-                    </select>
-
-                </label>
-
-                <label>
-
-                    Cantidad
-
-                    <input
-                        id="cantidad"
-                        type="number"
-                        step="0.01">
-
-                </label>
-
-            </div>
-
-            <div class="info">
-
-                <strong>Información del Producto</strong>
-
-                <br><br>
-
-                SKU:
-                <span id="sku">---</span>
-
-                <br>
-
-                Nombre:
-                <span id="nombre">---</span>
-
-                <br>
-
-                Categoría:
-                <span id="categoria">---</span>
-
-                <br>
-
-                Unidad:
-                <span id="unidad">---</span>
-
-            </div>
-
-            <div class="actions">
-
-                <button class="primary">
-                    Registrar Recepción
-                </button>
-
-                <button class="secondary">
-                    Limpiar
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- BUSQUEDA -->
-
-        <div class="card">
-
-            <h3>Buscar Recepciones</h3>
-
-            <div class="form">
-
-                <label>
-                    Proveedor
-                    <input id="f_proveedor">
-                </label>
-
-                <label>
-                    Lote
-                    <input id="f_lote">
-                </label>
-
-                <label>
-
-                    Producto o SKU
-
-                    <input
-                        id="f_producto"
-                        list="productos"
-                        placeholder="Código o nombre">
-
-                </label>
-
-                <label>
-
-                    Categoría
-
-                    <select>
-
-                        <option value="">
-                            Todas
-                        </option>
-
-                    </select>
-
-                </label>
-
-                <label>
-                    Fecha Desde
-
-                    <input
-                        id="fecha_desde"
-                        type="date">
-
-                </label>
-
-                <label>
-                    Fecha Hasta
-
-                    <input
-                        id="fecha_hasta"
-                        type="date">
-
-                </label>
-
-            </div>
-
-            <div class="actions">
-
-                <button class="primary">
-                    Buscar
-                </button>
-
-                <button class="secondary">
-                    Limpiar
-                </button>
-
-                <button class="secondary">
-                    Descargar Excel
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- TABLA -->
-
-        <div class="card">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>Consecutivo</th>
-                        <th>Fecha</th>
-                        <th>SKU</th>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Proveedor</th>
-                        <th>Factura</th>
-                        <th>Lote</th>
-                        <th>Vence</th>
-                        <th>Cantidad</th>
-                        <th>Saldo</th>
-                        <th>Temp.</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    <tr>
-
-                        <td>EMP-000001</td>
-                        <td>03-11-2026</td>
-                        <td>11882</td>
-                        <td>ALMIDON</td>
-                        <td>MATERIA PRIMA SECA</td>
-                        <td>Proveedor Demo</td>
-                        <td>FAC-001</td>
-                        <td>261103</td>
-                        <td>15-12-2026</td>
-                        <td>1000</td>
-                        <td>1000</td>
-                        <td>25</td>
-
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </main>
-
-</div>
+<aside>
+  <div class="logo">SICOPE<small>Control de planta y embutidos</small></div>
+  <nav>
+    <a class="off" aria-disabled="true" title="Próximamente">Inicio</a>
+    <a class="on" aria-current="page">Recepción MP</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Inventario</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Kardex</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Producción</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Despachos</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Reportes</a>
+    <a class="off" aria-disabled="true" title="Próximamente">Configuración</a>
+  </nav>
+</aside>
+<main>
+  <div class="top">
+    <h1>Recepción de materia prima</h1>
+    <div class="row" style="align-items:center">
+      <span id="estado" class="st">Cargando base de datos…</span>
+      <button id="bdescargar" class="sec sm" hidden>Descargar sicope.db</button>
+    </div>
+  </div>
+
+  <div id="abrir" hidden>
+    <p style="margin:0 0 10px"><b>No se encontró sicope.db junto a esta página.</b> Súbelo al mismo repositorio con ese nombre, o ábrelo desde tu equipo para trabajar ahora.</p>
+    <input type="file" id="archivo" accept=".db,.sqlite,.sqlite3,.txt">
+  </div>
+
+  <div id="app" hidden>
+  <form class="card" id="form" autocomplete="off">
+    <h2 id="ftitulo">Nueva recepción</h2>
+    <div class="grid">
+      <label class="s4">Producto (código - nombre)
+        <input id="prod" placeholder="Escribe el código o el nombre" required>
+      </label>
+      <div class="info" id="info" hidden></div>
+      <label class="s2">Proveedor<input id="prov"></label>
+      <label>Número de factura<input id="fac"></label>
+      <label>Lote
+        <span class="row"><input id="lote"><button type="button" class="sec" id="bgen">Generar</button></span>
+      </label>
+      <label>Fecha de vencimiento
+        <span class="date"><input id="venc" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span>
+      </label>
+      <label>Temperatura °C<input id="temp" type="number" step="any"></label>
+      <label>Tipo de empaque
+        <select id="emp"><option>Cartón</option><option>Caja plástica</option><option>Sacos</option><option>Bolsas</option></select>
+      </label>
+      <label>Cantidad<input id="cant" type="number" step="any" min="0"></label>
+      <div class="actions s4">
+        <button type="submit" id="bguardar">Registrar recepción</button>
+        <button type="button" class="sec" id="bcancelar" hidden>Cancelar edición</button>
+        <button type="button" class="sec" id="blimpiar">Limpiar</button>
+      </div>
+    </div>
+    <p class="hint">Materia prima cárnica puede registrarse sin factura ni vencimiento; el resto los exige. Lo guardado vive en el navegador hasta que descargues sicope.db y lo subas a tu repositorio.</p>
+  </form>
+
+  <section class="card">
+    <h2>Buscar recepciones</h2>
+    <div class="grid" style="margin-bottom:12px">
+      <label>Proveedor<input id="f-prov"></label>
+      <label>Lote<input id="f-lote"></label>
+      <label>Producto o SKU<input id="f-prod" placeholder="SKU o nombre"></label>
+      <label>Categoría<select id="f-cat"><option value="">Todas</option></select></label>
+      <label>Fecha desde<span class="date"><input id="f-des" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span></label>
+      <label>Fecha hasta<span class="date"><input id="f-has" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span></label>
+      <div class="actions s2"><button id="bbuscar" type="button">Buscar</button><button id="bfclear" type="button" class="sec">Quitar filtros</button></div>
+    </div>
+    <p class="st" id="cuenta"></p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Consecutivo</th><th>Fecha</th><th>SKU</th><th>Producto</th><th>Categoría</th><th>Proveedor</th><th>Factura</th><th>Lote</th><th>Vencimiento</th><th class="n">Cantidad</th><th class="n">Saldo</th><th class="n">Temp. °C</th><th>Empaque</th><th></th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
+</main>
+<div id="toast" hidden></div>
 
 <script>
+let SQL, db, dirty = false, editId = null, prod = null, userId = 1;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const dmy = s => s ? s.slice(0, 10).split('-').reverse().join('-') : '';
+const iso = s => {
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec((s || '').trim());
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2] - 1, +m[1]);
+  return d.getDate() === +m[1] && d.getMonth() === +m[2] - 1 ? `${m[3]}-${m[2]}-${m[1]}` : null;
+};
+const num = v => v == null ? '' : Number(v).toLocaleString('es-CR', {maximumFractionDigits: 3});
 
-function generarLote(){
-
-    const hoy = new Date();
-
-    const lote =
-        String(hoy.getFullYear()).slice(-2) +
-        String(hoy.getMonth()+1).padStart(2,'0') +
-        String(hoy.getDate()).padStart(2,'0');
-
-    document
-        .getElementById("lote")
-        .value = lote;
-
+function q(sql, p = []) {
+  const st = db.prepare(sql); st.bind(p);
+  const r = []; while (st.step()) r.push(st.getAsObject());
+  st.free(); return r;
+}
+function run(sql, p = []) { db.run(sql, p); setDirty(true); }
+function setDirty(v) {
+  dirty = v;
+  $('estado').textContent = v ? 'Hay cambios sin descargar' : 'sicope.db cargada';
+  $('estado').classList.toggle('dirty', v);
+  $('bdescargar').hidden = !v;
+}
+let tt;
+function toast(msg, err) {
+  const t = $('toast'); t.textContent = msg; t.className = err ? 'err' : ''; t.hidden = false;
+  clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500);
 }
 
-</script>
+/* Autocompletado */
+function ac(inp, search, pick) {
+  const ul = document.createElement('ul'); ul.className = 'ac'; ul.hidden = true;
+  inp.closest('label').appendChild(ul);
+  let items = [], ix = -1;
+  const close = () => { ul.hidden = true; ix = -1; };
+  const mark = () => [...ul.children].forEach((li, i) => li.classList.toggle('on', i === ix));
+  const show = () => {
+    items = search(inp.value.trim());
+    ul.innerHTML = items.map((p, i) => `<li data-i="${i}">${esc(p.sku)} - ${esc(p.nombre)}</li>`).join('') || '<li class="none">Sin resultados</li>';
+    ul.hidden = false; ix = -1;
+  };
+  const choose = p => { inp.value = `${p.sku} - ${p.nombre}`; close(); pick(p); };
+  inp.addEventListener('input', () => { pick(null); show(); });
+  inp.addEventListener('focus', show);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (ul.hidden) show();
+      ix = (ix + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % (items.length || 1); mark(); e.preventDefault();
+    } else if (e.key === 'Enter' && !ul.hidden && items.length) { e.preventDefault(); choose(items[ix < 0 ? 0 : ix]); }
+    else if (e.key === 'Escape') close();
+  });
+  ul.addEventListener('mousedown', e => { const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); choose(items[li.dataset.i]); } });
+  document.addEventListener('click', e => { if (!inp.closest('label').contains(e.target)) close(); });
+  return choose;
+}
+const buscarProd = (t, soloMP) => q(
+  `SELECT * FROM productos WHERE activo=1 ${soloMP ? "AND categoria<>'PRODUCTO TERMINADO'" : ''} AND (sku LIKE ? OR nombre LIKE ?) ORDER BY (sku LIKE ?) DESC, sku LIMIT 12`,
+  [`%${t}%`, `%${t}%`, `${t}%`]);
 
+/* Campos de fecha DD-MM-AAAA con calendario */
+function initDates() {
+  document.querySelectorAll('.date').forEach(w => {
+    const t = w.querySelector('input:not(.hid)'), h = w.querySelector('.hid');
+    t.addEventListener('input', () => {
+      const v = t.value.replace(/\D/g, '').slice(0, 8);
+      t.value = v.slice(0, 2) + (v.length > 2 ? '-' + v.slice(2, 4) : '') + (v.length > 4 ? '-' + v.slice(4) : '');
+    });
+    w.querySelector('.cal').addEventListener('click', () => {
+      h.value = iso(t.value) || '';
+      try { h.showPicker(); } catch { h.focus(); }
+    });
+    h.addEventListener('change', () => { t.value = dmy(h.value); });
+  });
+}
+
+/* Producto seleccionado */
+function setProd(p) {
+  prod = p;
+  const i = $('info');
+  if (!p) { i.hidden = true; return; }
+  i.hidden = false;
+  i.innerHTML = [['SKU', p.sku], ['Nombre', p.nombre], ['Categoría', p.categoria], ['Unidad', p.unidad],
+    ['Subcategoría', p.subcategoria], ['Marca', p.marca], ['Presentación', p.presentacion], ['Vida útil', (p.vida_util_dias || 0) + ' días']]
+    .map(([k, v]) => `<div><b>${k}</b>${esc(v) || '—'}</div>`).join('');
+}
+
+/* Formulario */
+function limpiar() {
+  $('form').reset(); editId = null; setProd(null);
+  $('ftitulo').textContent = 'Nueva recepción';
+  $('bguardar').textContent = 'Registrar recepción';
+  $('bcancelar').hidden = true;
+}
+function guardar(e) {
+  e.preventDefault();
+  if (!prod) return toast('Elige un producto de la lista', true);
+  const carn = prod.categoria === 'MATERIA PRIMA CARNICA';
+  const prov = $('prov').value.trim(), fac = $('fac').value.trim(), lote = $('lote').value.trim();
+  const cant = parseFloat($('cant').value), temp = $('temp').value === '' ? null : parseFloat($('temp').value);
+  const vtxt = $('venc').value.trim(), venc = vtxt ? iso(vtxt) : null;
+  if (!prov || !lote || !(cant > 0)) return toast('Completa proveedor, lote y una cantidad mayor a 0', true);
+  if (vtxt && !venc) return toast('La fecha de vencimiento no es válida. Usa DD-MM-AAAA', true);
+  if (!carn && !fac) return toast('Este producto requiere número de factura', true);
+  if (!carn && !venc) return toast('Este producto requiere fecha de vencimiento', true);
+  const alerta = temp != null && prod.temp_max != null && temp > prod.temp_max ? 1 : 0;
+  const emp = $('emp').value;
+  if (editId) {
+    const o = q('SELECT cantidad, saldo FROM entradas_mp WHERE id=?', [editId])[0];
+    run('UPDATE entradas_mp SET producto_id=?, proveedor=?, factura=?, lote=?, fecha_vencimiento=?, temperatura=?, tipo_empaque=?, cantidad=?, saldo=?, alerta_temp=? WHERE id=?',
+      [prod.id, prov, fac, lote, venc, temp, emp, cant, Math.max(0, o.saldo + cant - o.cantidad), alerta, editId]);
+    toast('Recepción actualizada');
+  } else {
+    const n = q("SELECT COALESCE(MAX(CAST(SUBSTR(consecutivo,5) AS INTEGER)),0)+1 AS n FROM entradas_mp WHERE consecutivo LIKE 'EMP-%'")[0].n;
+    const alm = (q('SELECT almacen_id AS a FROM almacenes_categorias WHERE categoria=?', [prod.categoria])[0] || {}).a ?? null;
+    const d = new Date();
+    const fecha = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, '0')}000`;
+    const cons = 'EMP-' + String(n).padStart(6, '0');
+    run('INSERT INTO entradas_mp (consecutivo, producto_id, proveedor, factura, lote, fecha_vencimiento, temperatura, tipo_empaque, cantidad, saldo, alerta_temp, fecha, usuario_id, almacen_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [cons, prod.id, prov, fac, lote, venc, temp, emp, cant, cant, alerta, fecha, userId, alm]);
+    toast(`Recepción ${cons} registrada`);
+  }
+  limpiar(); buscar();
+}
+function editar(id) {
+  const e = q('SELECT * FROM entradas_mp WHERE id=?', [id])[0]; if (!e) return;
+  const p = q('SELECT * FROM productos WHERE id=?', [e.producto_id])[0];
+  limpiar(); editId = id; setProd(p);
+  $('prod').value = `${p.sku} - ${p.nombre}`;
+  $('prov').value = e.proveedor; $('fac').value = e.factura; $('lote').value = e.lote;
+  $('venc').value = dmy(e.fecha_vencimiento); $('temp').value = e.temperatura ?? ''; $('cant').value = e.cantidad;
+  if (![...$('emp').options].some(o => o.value === e.tipo_empaque)) $('emp').add(new Option(e.tipo_empaque, e.tipo_empaque));
+  $('emp').value = e.tipo_empaque;
+  $('ftitulo').textContent = `Editando ${e.consecutivo}`;
+  $('bguardar').textContent = 'Guardar cambios'; $('bcancelar').hidden = false;
+  $('form').scrollIntoView({behavior: 'smooth'});
+}
+function eliminar(id) {
+  const e = q('SELECT consecutivo, cantidad, saldo FROM entradas_mp WHERE id=?', [id])[0]; if (!e) return;
+  if (e.saldo < e.cantidad) return toast(`${e.consecutivo} ya tiene consumos y no se puede eliminar`, true);
+  if (!confirm(`¿Eliminar la recepción ${e.consecutivo}?`)) return;
+  run('DELETE FROM entradas_mp WHERE id=?', [id]); toast(`${e.consecutivo} eliminada`); buscar();
+}
+
+/* Búsqueda */
+function buscar() {
+  const w = [], p = [], v = id => $(id).value.trim();
+  if (v('f-prov')) { w.push('e.proveedor LIKE ?'); p.push(`%${v('f-prov')}%`); }
+  if (v('f-lote')) { w.push('e.lote LIKE ?'); p.push(`%${v('f-lote')}%`); }
+  const t = $('f-prod').dataset.sku || v('f-prod');
+  if (t) { w.push('(p.sku LIKE ? OR p.nombre LIKE ?)'); p.push(`%${t}%`, `%${t}%`); }
+  if (v('f-cat')) { w.push('p.categoria = ?'); p.push(v('f-cat')); }
+  const d1 = iso(v('f-des')), d2 = iso(v('f-has'));
+  if (v('f-des') && !d1 || v('f-has') && !d2) return toast('Fecha inválida. Usa DD-MM-AAAA', true);
+  if (d1) { w.push('date(e.fecha) >= ?'); p.push(d1); }
+  if (d2) { w.push('date(e.fecha) <= ?'); p.push(d2); }
+  const from = `FROM entradas_mp e INNER JOIN productos p ON p.id = e.producto_id ${w.length ? 'WHERE ' + w.join(' AND ') : ''}`;
+  const total = q(`SELECT COUNT(*) AS n ${from}`, p)[0].n;
+  const rows = q(`SELECT e.id, e.consecutivo, e.fecha, p.sku, p.nombre, p.categoria, e.proveedor, e.factura, e.lote, e.fecha_vencimiento, e.cantidad, e.saldo, e.temperatura, e.alerta_temp, e.tipo_empaque ${from} ORDER BY e.id DESC LIMIT 300`, p);
+  $('cuenta').textContent = total > rows.length ? `Mostrando las ${rows.length} más recientes de ${total}. Afina los filtros para ver el resto.` : `${total} recepciones`;
+  $('tb').innerHTML = rows.map(r => `<tr>
+    <td>${esc(r.consecutivo)}</td><td>${dmy(r.fecha)}</td><td>${esc(r.sku)}</td><td>${esc(r.nombre)}</td><td>${esc(r.categoria)}</td>
+    <td>${esc(r.proveedor)}</td><td>${esc(r.factura)}</td><td>${esc(r.lote)}</td><td>${dmy(r.fecha_vencimiento)}</td>
+    <td class="n">${num(r.cantidad)}</td><td class="n">${num(r.saldo)}</td><td class="n ${r.alerta_temp ? 'alert' : ''}" title="${r.alerta_temp ? 'Sobre la temperatura máxima' : ''}">${num(r.temperatura)}</td>
+    <td>${esc(r.tipo_empaque)}</td>
+    <td><button class="sec sm" data-e="${r.id}">Editar</button> <button class="del sm" data-d="${r.id}">Eliminar</button></td></tr>`).join('')
+    || '<tr><td colspan="14" style="text-align:center;color:var(--mute);padding:20px">No hay recepciones con esos filtros.</td></tr>';
+}
+
+/* Arranque */
+function abrir(buf) {
+  try {
+    db = new SQL.Database(new Uint8Array(buf));
+    q('SELECT 1 FROM entradas_mp LIMIT 1'); q('SELECT 1 FROM productos LIMIT 1');
+  } catch { return toast('Ese archivo no parece ser sicope.db (faltan las tablas productos o entradas_mp)', true); }
+  const u = q("SELECT id FROM usuarios WHERE rol='administrador' AND activo=1 ORDER BY id LIMIT 1")[0];
+  userId = u ? u.id : 1;
+  $('f-cat').innerHTML = '<option value="">Todas</option>' + q('SELECT nombre FROM categorias ORDER BY nombre').map(c => `<option>${esc(c.nombre)}</option>`).join('');
+  $('abrir').hidden = true; $('app').hidden = false;
+  setDirty(false); limpiar(); buscar();
+}
+ac($('prod'), t => buscarProd(t, true), p => setProd(p));
+ac($('f-prod'), t => buscarProd(t, false), p => { $('f-prod').dataset.sku = p ? p.sku : ''; });
+initDates();
+$('form').addEventListener('submit', guardar);
+$('blimpiar').onclick = $('bcancelar').onclick = limpiar;
+$('bgen').onclick = () => { const d = new Date(); $('lote').value = String(d.getFullYear()).slice(2) + p2(d.getMonth() + 1) + p2(d.getDate()); };
+$('bbuscar').onclick = buscar;
+$('bfclear').onclick = () => { ['f-prov', 'f-lote', 'f-prod', 'f-des', 'f-has', 'f-cat'].forEach(i => $(i).value = ''); $('f-prod').dataset.sku = ''; buscar(); };
+document.querySelectorAll('#f-prov,#f-lote,#f-des,#f-has').forEach(i => i.addEventListener('keydown', e => e.key === 'Enter' && buscar()));
+$('tb').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  b.dataset.e ? editar(+b.dataset.e) : eliminar(+b.dataset.d);
+});
+$('bdescargar').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([db.export()], {type: 'application/x-sqlite3'}));
+  a.download = 'sicope.db'; a.click(); URL.revokeObjectURL(a.href);
+  setDirty(false); toast('sicope.db descargada. Reemplaza el archivo en tu repositorio');
+};
+$('archivo').addEventListener('change', async e => { if (e.target.files[0]) abrir(await e.target.files[0].arrayBuffer()); });
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+initSqlJs({locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`}).then(async S => {
+  SQL = S;
+  try {
+    const r = await fetch('sicope.db', {cache: 'no-store'});
+    if (!r.ok) throw 0;
+    abrir(await r.arrayBuffer());
+  } catch { $('estado').textContent = 'Sin base de datos'; $('abrir').hidden = false; }
+}).catch(() => { $('estado').textContent = 'No se pudo cargar sql.js. Revisa tu conexión.'; });
+</script>
 </body>
 </html>
