@@ -1,246 +1,168 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Recepción MP</title>
-
-<style>
-
-body{
-    font-family: Arial, sans-serif;
-    margin:20px;
-    background:#f4f4f4;
-}
-
-.card{
-    background:white;
-    padding:15px;
-    border-radius:8px;
-    box-shadow:0 2px 4px rgba(0,0,0,.1);
-    margin-bottom:20px;
-}
-
-.form{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:10px;
-}
-
-label{
-    display:flex;
-    flex-direction:column;
-}
-
-input,select{
-    padding:8px;
-}
-
-button{
-    padding:10px 15px;
-    cursor:pointer;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-}
-
-th{
-    background:#0d6efd;
-    color:white;
-}
-
-</style>
-
-</head>
-
 <body>
 
-<h1>Recepción de Materia Prima</h1>
+<div class="layout">
 
-<div class="card">
+    <aside class="sidebar">
 
-<h3>Nueva Recepción</h3>
+        <div class="logo">
+            ERP-WEB
+        </div>
 
-<div class="form">
+        <a href="#">📊 Dashboard</a>
+        <a href="#">📥 Recepciones MP</a>
+        <a href="#">📦 Inventario</a>
+        <a href="#">📑 Kardex</a>
+        <a href="#">🧪 Formulación</a>
+        <a href="#">🏭 Producción</a>
+        <a href="#">🚚 Despachos</a>
+        <a href="#">👥 Usuarios</a>
 
-<label>
-Producto
-<select id="producto"></select>
-</label>
+    </aside>
 
-<label>
-Proveedor
-<input id="proveedor">
-</label>
+    <main class="content">
 
-<label>
-Lote
-<input id="lote">
-</label>
+        <div class="header">
 
-<label>
-Cantidad
-<input id="cantidad" type="number">
-</label>
+            <div>
+                <h1>Recepción de Materia Prima</h1>
+                <span>
+                    Sistema ERP Web
+                </span>
+            </div>
+
+        </div>
+
+        <!-- DASHBOARD -->
+
+        <div class="stats">
+
+            <div class="stat">
+                <h2 id="kpiRecepciones">0</h2>
+                <span>Recepciones</span>
+            </div>
+
+            <div class="stat">
+                <h2 id="kpiCantidad">0</h2>
+                <span>Cantidad Total</span>
+            </div>
+
+            <div class="stat">
+                <h2 id="kpiProductos">0</h2>
+                <span>Productos</span>
+            </div>
+
+            <div class="stat">
+                <h2 id="kpiProveedores">0</h2>
+                <span>Proveedores</span>
+            </div>
+
+        </div>
+
+        <!-- FORMULARIO -->
+
+        <div class="card">
+
+            <h3>Nueva Recepción</h3>
+
+            <div class="form">
+
+                <label>
+                    SKU
+                    <input id="sku">
+                </label>
+
+                <label>
+                    Producto
+                    <input id="producto">
+                </label>
+
+                <label>
+                    Categoría
+                    <input id="categoria">
+                </label>
+
+                <label>
+                    Proveedor
+                    <input id="proveedor">
+                </label>
+
+                <label>
+                    Factura
+                    <input id="factura">
+                </label>
+
+                <label>
+                    Lote
+                    <input id="lote">
+                </label>
+
+                <label>
+                    Fecha Vencimiento
+                    <input id="vence" type="date">
+                </label>
+
+                <label>
+                    Temperatura
+                    <input id="temp" type="number">
+                </label>
+
+                <label>
+                    Cantidad
+                    <input id="cantidad" type="number">
+                </label>
+
+            </div>
+
+            <br>
+
+            <button onclick="guardar()">
+                Registrar Recepción
+            </button>
+
+        </div>
+
+        <!-- BUSQUEDA -->
+
+        <div class="card">
+
+            <h3>Buscar</h3>
+
+            <input
+                id="buscar"
+                placeholder="Buscar por producto, SKU, proveedor o lote..."
+            >
+
+        </div>
+
+        <!-- TABLA -->
+
+        <div class="card">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>SKU</th>
+                        <th>Producto</th>
+                        <th>Proveedor</th>
+                        <th>Lote</th>
+                        <th>Cantidad</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tabla">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
 
 </div>
-
-<br>
-
-<button onclick="guardar()">
-Registrar
-</button>
-
-</div>
-
-<div class="card">
-
-<h3>Recepciones</h3>
-
-<table>
-
-<thead>
-<tr>
-<th>ID</th>
-<th>Producto</th>
-<th>Proveedor</th>
-<th>Lote</th>
-<th>Cantidad</th>
-</tr>
-</thead>
-
-<tbody id="tabla">
-
-</tbody>
-
-</table>
-
-</div>
-
-<script>
-
-// CAMBIAR POR TU API
-const API =
-"https://TU-TUNEL.trycloudflare.com";
-
-async function cargarProductos(){
-
-    const r = await fetch(
-        API + "/productos"
-    );
-
-    const productos = await r.json();
-
-    let html = '';
-
-    productos.forEach(p=>{
-
-        html += `
-        <option value="${p.id}">
-            ${p.sku} - ${p.nombre}
-        </option>
-        `;
-
-    });
-
-    document
-        .getElementById('producto')
-        .innerHTML = html;
-}
-
-async function cargarRecepciones(){
-
-    const r = await fetch(
-        API + "/entrada-mp"
-    );
-
-    const datos = await r.json();
-
-    let html = '';
-
-    datos.forEach(x=>{
-
-        html += `
-        <tr>
-            <td>${x.id}</td>
-            <td>${x.producto}</td>
-            <td>${x.proveedor}</td>
-            <td>${x.lote}</td>
-            <td>${x.cantidad}</td>
-        </tr>
-        `;
-
-    });
-
-    document
-      .getElementById('tabla')
-      .innerHTML = html;
-
-}
-
-async function guardar(){
-
-    const body = {
-
-        producto_id:
-        document.getElementById('producto').value,
-
-        proveedor:
-        document.getElementById('proveedor').value,
-
-        lote:
-        document.getElementById('lote').value,
-
-        cantidad:
-        Number(
-            document.getElementById('cantidad').value
-        )
-
-    };
-
-    const r = await fetch(
-
-        API + "/entrada-mp",
-
-        {
-            method:'POST',
-            headers:{
-                'Content-Type':
-                'application/json'
-            },
-            body:JSON.stringify(body)
-        }
-
-    );
-
-    if(r.ok){
-
-        alert("Guardado");
-
-        cargarRecepciones();
-
-    }
-    else{
-
-        alert("Error");
-
-    }
-
-}
-
-cargarProductos();
-cargarRecepciones();
-
-</script>
 
 </body>
-</html>
