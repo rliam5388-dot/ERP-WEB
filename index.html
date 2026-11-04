@@ -1,605 +1,472 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SICOPE · Recepción MP</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<title>Inspección Semanal</title>
+
 <style>
-:root{--ink:#1c2429;--mute:#66727a;--line:#d3d8d6;--bg:#f2f4f3;--side:#1d2a31;--acc:#0e6a6a;--warn:#b4690e;--bad:#b3261e}
-*{box-sizing:border-box}
-body{margin:0;font:14px/1.45 'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:grid;grid-template-columns:208px 1fr;min-height:100vh}
-aside{background:var(--side);color:#c9d3d8;padding:16px 0;position:sticky;top:0;height:100vh}
-.logo{padding:0 18px 16px;font-weight:600;color:#fff;font-size:16px}
-.logo small{display:block;font-weight:400;color:#8fa1a9;font-size:12px}
-nav a{display:block;padding:9px 18px;color:inherit;text-decoration:none;border-left:3px solid transparent}
-nav a.on{background:#26363e;color:#fff;border-left-color:#3fb5a8}
-nav a.off{opacity:.45;cursor:not-allowed}
-nav b{display:block;padding:14px 18px 4px;font-weight:500;font-size:12px;color:#8fa1a9}
-main{padding:20px 24px;min-width:0}
-.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
-h1{font-size:20px;margin:0;font-weight:600}
-.st{color:var(--mute);font-size:13px}
-.st.dirty{color:var(--warn);font-weight:600}
-.card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
-h2{font-size:15px;margin:0 0 12px;font-weight:600}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.s2{grid-column:span 2}.s4{grid-column:1/-1}
-label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mute);position:relative}
-input,select,button{font:inherit}
-input,select{padding:7px 9px;border:1px solid #b9c1c4;border-radius:4px;background:#fff;color:var(--ink);min-height:34px;width:100%}
-input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-button{padding:7px 14px;border:1px solid var(--acc);background:var(--acc);color:#fff;border-radius:4px;cursor:pointer;min-height:34px;white-space:nowrap}
-button.sec{background:#fff;color:var(--acc)}
-button.sm{padding:3px 9px;min-height:26px;font-size:12.5px}
-button.del{border-color:var(--bad);color:var(--bad);background:#fff}
-.row{display:flex;gap:6px}
-.actions{display:flex;gap:8px;align-items:end}
-.info{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px 12px;background:#eef2f1;border-radius:4px;padding:10px 12px;font-size:13px;color:var(--ink)}
-.info b{display:block;font-weight:400;color:var(--mute);font-size:12px}
-.ac{position:absolute;top:100%;left:0;right:0;z-index:5;margin:2px 0 0;padding:0;list-style:none;background:#fff;border:1px solid #9fb0b5;border-radius:4px;max-height:260px;overflow:auto;box-shadow:0 6px 16px rgba(0,0,0,.12)}
-.ac li{padding:7px 10px;cursor:pointer;color:var(--ink)}
-.ac li.on,.ac li:hover{background:#dff0ee}
-.ac li.none{color:var(--mute);cursor:default}
-.date{position:relative;display:flex;gap:4px}
-.date .cal{padding:0 9px;background:#fff;color:var(--acc)}
-.date .hid{position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;min-height:0;padding:0;border:0}
-.tw{overflow-x:auto;max-height:520px}
-table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}
-th,td{padding:7px 10px;border-bottom:1px solid #e3e7e5;text-align:left}
-th{background:#eef2f1;position:sticky;top:0;font-weight:600}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.alert{color:var(--warn);font-weight:600}
-.hint{font-size:12.5px;color:var(--mute);margin:8px 0 0}
-#toast{position:fixed;right:20px;bottom:20px;padding:10px 16px;border-radius:4px;color:#fff;background:var(--acc);max-width:360px;z-index:20}
-#toast.err{background:var(--bad)}
-#abrir{border:1px dashed #9fb0b5;background:#fff;padding:24px;border-radius:6px;margin-bottom:16px}
-dialog{border:1px solid var(--line);border-radius:6px;width:min(780px,94vw);padding:18px;color:var(--ink)}
-dialog::backdrop{background:rgba(20,30,35,.45)}
-.fr{display:grid;grid-template-columns:3fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end}
-.fr.p{grid-template-columns:3fr 1fr auto}
-[hidden]{display:none!important}
-@media(max-width:860px){body{grid-template-columns:1fr}aside{position:static;height:auto;padding:10px 0 0}nav,nav section{display:flex}nav{overflow-x:auto}nav b{display:none}nav a{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}nav a.on{border-bottom-color:#3fb5a8}.grid{grid-template-columns:1fr 1fr}.info{grid-template-columns:1fr 1fr}main{padding:14px}}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.s2{grid-column:auto}}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Segoe UI,Arial,sans-serif;
+    background:#f5f6f8;
+    color:#222;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+h1{
+    margin-bottom:5px;
+}
+
+.sub{
+    color:#666;
+    margin-bottom:20px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.card h2{
+    font-size:30px;
+    margin-bottom:5px;
+}
+
+.ok{
+    color:#14803c;
+}
+
+.pending{
+    color:#b7791f;
+}
+
+.filters{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+input,select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+.days{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.day-card{
+    background:white;
+    border-radius:10px;
+    padding:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.day-card h3{
+    margin-bottom:10px;
+}
+
+.item{
+    padding:8px;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
+}
+
+.item:hover{
+    background:#f8f8f8;
+}
+
+.badge{
+    display:inline-block;
+    padding:3px 8px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.badge-ok{
+    background:#d9f7df;
+    color:#14803c;
+}
+
+.badge-pending{
+    background:#fff4d4;
+    color:#a36b00;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th{
+    background:#0f172a;
+    color:white;
+}
+
+th,td{
+    padding:10px;
+    border:1px solid #ddd;
+    text-align:left;
+}
+
+tr:nth-child(even){
+    background:#f8f8f8;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-box{
+    width:min(800px,95%);
+    background:white;
+    border-radius:10px;
+    padding:20px;
+}
+
+.modal-box h2{
+    margin-bottom:15px;
+}
+
+.close{
+    margin-top:15px;
+    padding:10px 15px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    border-radius:8px;
+}
+
 </style>
 </head>
 <body>
-<aside>
-  <div class="logo">SICOPE<small>Control de planta y embutidos</small></div>
-  <nav>
-    <a href="#/inicio" data-v="inicio">Inicio</a>
-    <section><b>Operación</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Programación</a><a href="#/pedidos" data-v="pedidos">Pedidos</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Despacho</a><a href="#/consumos" data-v="consumos">Consumos</a></section>
-    <section><b>Inventarios y catálogo</b><a href="#/recepcion" data-v="recepcion">Recepción</a><a href="#/inventario-mp" data-v="inventario-mp">Inventario MP</a><a href="#/inventario-pt" data-v="inventario-pt">Inventario PT</a><a href="#/almacenes" data-v="almacenes">Almacenes e inventarios</a><a href="#/productos" data-v="productos">Productos</a><a href="#/formulas" data-v="formulas">Fórmulas</a></section>
-    <section><b>Gestión</b><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Oficina</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Ajustes</a><a class="off" aria-disabled="true" title="Aún no disponible en esta versión">Roles y tareas</a><a href="#/usuarios" data-v="usuarios">Usuarios</a><a href="#/auditoria" data-v="auditoria">Auditoría</a></section>
-  </nav>
-</aside>
-<main>
-  <div class="top">
-    <h1 id="titulo">Recepción de materia prima</h1>
-    <div class="row" style="align-items:center">
-      <span id="estado" class="st">Cargando base de datos…</span>
-      <button id="bdescargar" class="sec sm" hidden>Descargar sicope.db</button>
-    </div>
-  </div>
 
-  <div id="abrir" hidden>
-    <p style="margin:0 0 10px"><b>No se encontró sicope.db junto a esta página.</b> Súbelo al mismo repositorio con ese nombre, o ábrelo desde tu equipo para trabajar ahora.</p>
-    <input type="file" id="archivo" accept=".db,.sqlite,.sqlite3,.txt">
-  </div>
+<div class="container">
 
-  <div id="app" hidden>
-  <div id="v-recepcion">
-  <form class="card" id="form" autocomplete="off">
-    <h2 id="ftitulo">Nueva recepción</h2>
-    <div class="grid">
-      <label class="s4">Producto (código - nombre)
-        <input id="prod" placeholder="Escribe el código o el nombre" required>
-      </label>
-      <div class="info" id="info" hidden></div>
-      <label class="s2">Proveedor<input id="prov"></label>
-      <label>Número de factura<input id="fac"></label>
-      <label>Lote
-        <span class="row"><input id="lote"><button type="button" class="sec" id="bgen">Generar</button></span>
-      </label>
-      <label>Fecha de vencimiento
-        <span class="date"><input id="venc" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span>
-      </label>
-      <label>Temperatura °C<input id="temp" type="number" step="any"></label>
-      <label>Tipo de empaque
-        <select id="emp"><option>Cartón</option><option>Caja plástica</option><option>Sacos</option><option>Bolsas</option></select>
-      </label>
-      <label>Cantidad<input id="cant" type="number" step="any" min="0"></label>
-      <div class="actions s4">
-        <button type="submit" id="bguardar">Registrar recepción</button>
-        <button type="button" class="sec" id="bcancelar" hidden>Cancelar edición</button>
-        <button type="button" class="sec" id="blimpiar">Limpiar</button>
-      </div>
-    </div>
-    <p class="hint">Materia prima cárnica puede registrarse sin factura ni vencimiento; el resto los exige. Lo guardado vive en el navegador hasta que descargues sicope.db y lo subas a tu repositorio.</p>
-  </form>
+<h1>Control Semanal BPM</h1>
+<p class="sub">Seguimiento semanal de inspecciones y verificaciones.</p>
 
-  <section class="card">
-    <h2>Buscar recepciones</h2>
-    <div class="grid" style="margin-bottom:12px">
-      <label>Proveedor<input id="f-prov"></label>
-      <label>Lote<input id="f-lote"></label>
-      <label>Producto o SKU<input id="f-prod" placeholder="SKU o nombre"></label>
-      <label>Categoría<select id="f-cat"><option value="">Todas</option></select></label>
-      <label>Fecha desde<span class="date"><input id="f-des" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span></label>
-      <label>Fecha hasta<span class="date"><input id="f-has" placeholder="DD-MM-AAAA" inputmode="numeric" maxlength="10"><button type="button" class="cal" aria-label="Abrir calendario"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg></button><input type="date" class="hid" tabindex="-1"></span></label>
-      <div class="actions s2"><button id="bbuscar" type="button">Buscar</button><button id="bfclear" type="button" class="sec">Quitar filtros</button></div>
-    </div>
-    <p class="st" id="cuenta"></p>
-    <div class="tw">
-      <table>
-        <thead><tr><th>Consecutivo</th><th>Fecha</th><th>SKU</th><th>Producto</th><th>Categoría</th><th>Proveedor</th><th>Factura</th><th>Lote</th><th>Vencimiento</th><th class="n">Cantidad</th><th class="n">Saldo</th><th class="n">Temp. °C</th><th>Empaque</th><th></th></tr></thead>
-        <tbody id="tb"></tbody>
-      </table>
-    </div>
-  </section>
-  </div>
-  <section id="v-lista" class="card" hidden>
-    <div class="row" style="margin-bottom:10px;align-items:center"><input id="l-q" placeholder="Filtrar en esta lista" style="max-width:340px"><span class="st" id="l-cuenta"></span><button id="l-nuevo" type="button" hidden style="margin-left:auto"></button></div>
-    <div class="tw"><table><thead id="l-head"></thead><tbody id="l-body"></tbody></table></div>
-  </section>
-  </div>
-</main>
-<datalist id="dl-prod"></datalist><datalist id="dl-pt"></datalist>
-<dialog id="dlg"><form id="dform"><h2 id="dt"></h2><div id="dbody"></div><div class="actions" style="margin-top:14px"><button type="submit">Guardar</button><button type="button" class="sec" id="dcancel">Cancelar</button></div></form></dialog>
-<div id="toast" hidden></div>
+<div class="stats">
+
+<div class="card">
+<h2 id="total">18</h2>
+<div>Total registros</div>
+</div>
+
+<div class="card">
+<h2 class="ok" id="ok">13</h2>
+<div>Conformes</div>
+</div>
+
+<div class="card">
+<h2 class="pending" id="pend">5</h2>
+<div>Sin evaluar</div>
+</div>
+
+</div>
+
+<div class="filters">
+
+<input
+id="buscar"
+placeholder="Buscar código o descripción...">
+
+<select id="dia">
+<option value="">Todos los días</option>
+<option>lunes</option>
+<option>martes</option>
+<option>miércoles</option>
+<option>jueves</option>
+<option>viernes</option>
+<option>sábado</option>
+<option>domingo</option>
+</select>
+
+<select id="estado">
+<option value="">Todos los estados</option>
+<option>OK</option>
+<option>PENDIENTE</option>
+</select>
+
+</div>
+
+<div class="days">
+
+<div class="day-card">
+<h3>Lunes</h3>
+
+<div class="item"
+onclick="detalle(
+'4.3.1',
+'El hielo se fabrica con agua potable y se manipula correctamente.',
+'OK',
+'26/10/2026 10:51',
+'lunes'
+)">
+4.3.1
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+5.3.2
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+5.2.1
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+5.1.2
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+7.2
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+</div>
+
+<div class="day-card">
+<h3>Martes</h3>
+
+<div class="item">
+5.1.5
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+7.7
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+</div>
+
+<div class="day-card">
+<h3>Miércoles</h3>
+
+<div class="item">
+7.8
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+8.1
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+</div>
+
+<div class="day-card">
+<h3>Jueves</h3>
+
+<div class="item">
+7.6
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+6.1.2
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+5.3.4
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+5.1.1
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+<div class="item">
+2.3.1
+<span class="badge badge-ok">
+OK
+</span>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3 style="margin-bottom:15px;">
+Detalle General
+</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Estado</th>
+<th>Fecha</th>
+<th>Día</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>4.3.1</td>
+<td>OK</td>
+<td>26/10/2026 10:51</td>
+<td>Lunes</td>
+</tr>
+
+<tr>
+<td>5.3.2</td>
+<td>OK</td>
+<td>26/10/2026 21:11</td>
+<td>Lunes</td>
+</tr>
+
+<tr>
+<td>5.2.1</td>
+<td>OK</td>
+<td>26/10/2026 21:00</td>
+<td>Lunes</td>
+</tr>
+
+<tr>
+<td>5.1.2</td>
+<td>OK</td>
+<td>26/10/2026 10:30</td>
+<td>Lunes</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<div class="modal" id="modal">
+
+<div class="modal-box">
+
+<h2 id="m_id"></h2>
+
+<p id="m_desc"></p>
+
+<br>
+
+<p><b>Estado:</b> <span id="m_estado"></span></p>
+
+<p><b>Fecha:</b> <span id="m_fecha"></span></p>
+
+<p><b>Día:</b> <span id="m_dia"></span></p>
+
+<button
+class="close"
+onclick="cerrarModal()">
+
+Cerrar
+
+</button>
+
+</div>
+
+</div>
 
 <script>
-let SQL, db, dirty = false, editId = null, prod = null, userId = 1;
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const p2 = n => String(n).padStart(2, '0');
-const dmy = s => s ? s.slice(0, 10).split('-').reverse().join('-') : '';
-const iso = s => {
-  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec((s || '').trim());
-  if (!m) return null;
-  const d = new Date(+m[3], +m[2] - 1, +m[1]);
-  return d.getDate() === +m[1] && d.getMonth() === +m[2] - 1 ? `${m[3]}-${m[2]}-${m[1]}` : null;
-};
-const num = v => v == null ? '' : Number(v).toLocaleString('es-CR', {maximumFractionDigits: 3});
 
-function q(sql, p = []) {
-  const st = db.prepare(sql); st.bind(p);
-  const r = []; while (st.step()) r.push(st.getAsObject());
-  st.free(); return r;
-}
-function run(sql, p = []) { db.run(sql, p); setDirty(true); }
-function setDirty(v) {
-  dirty = v;
-  $('estado').textContent = v ? 'Hay cambios sin descargar' : 'sicope.db cargada';
-  $('estado').classList.toggle('dirty', v);
-  $('bdescargar').hidden = !v;
-}
-let tt;
-function toast(msg, err) {
-  const t = $('toast'); t.textContent = msg; t.className = err ? 'err' : ''; t.hidden = false;
-  clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500);
+function detalle(
+id,
+descripcion,
+estado,
+fecha,
+dia
+){
+
+document.getElementById("m_id").innerText=id;
+
+document.getElementById("m_desc").innerText=descripcion;
+
+document.getElementById("m_estado").innerText=estado;
+
+document.getElementById("m_fecha").innerText=fecha;
+
+document.getElementById("m_dia").innerText=dia;
+
+document.getElementById("modal").style.display="flex";
+
 }
 
-/* Autocompletado */
-function ac(inp, search, pick) {
-  const ul = document.createElement('ul'); ul.className = 'ac'; ul.hidden = true;
-  inp.closest('label').appendChild(ul);
-  let items = [], ix = -1;
-  const close = () => { ul.hidden = true; ix = -1; };
-  const mark = () => [...ul.children].forEach((li, i) => li.classList.toggle('on', i === ix));
-  const show = () => {
-    items = search(inp.value.trim());
-    ul.innerHTML = items.map((p, i) => `<li data-i="${i}">${esc(p.sku)} - ${esc(p.nombre)}</li>`).join('') || '<li class="none">Sin resultados</li>';
-    ul.hidden = false; ix = -1;
-  };
-  const choose = p => { inp.value = `${p.sku} - ${p.nombre}`; close(); pick(p); };
-  inp.addEventListener('input', () => { pick(null); show(); });
-  inp.addEventListener('focus', show);
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      if (ul.hidden) show();
-      ix = (ix + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % (items.length || 1); mark(); e.preventDefault();
-    } else if (e.key === 'Enter' && !ul.hidden && items.length) { e.preventDefault(); choose(items[ix < 0 ? 0 : ix]); }
-    else if (e.key === 'Escape') close();
-  });
-  ul.addEventListener('mousedown', e => { const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); choose(items[li.dataset.i]); } });
-  document.addEventListener('click', e => { if (!inp.closest('label').contains(e.target)) close(); });
-  return choose;
-}
-const buscarProd = (t, soloMP) => q(
-  `SELECT * FROM productos WHERE activo=1 ${soloMP ? "AND categoria<>'PRODUCTO TERMINADO'" : ''} AND (sku LIKE ? OR nombre LIKE ?) ORDER BY (sku LIKE ?) DESC, sku LIMIT 12`,
-  [`%${t}%`, `%${t}%`, `${t}%`]);
+function cerrarModal(){
 
-/* Campos de fecha DD-MM-AAAA con calendario */
-function initDates() {
-  document.querySelectorAll('.date').forEach(w => {
-    const t = w.querySelector('input:not(.hid)'), h = w.querySelector('.hid');
-    t.addEventListener('input', () => {
-      const v = t.value.replace(/\D/g, '').slice(0, 8);
-      t.value = v.slice(0, 2) + (v.length > 2 ? '-' + v.slice(2, 4) : '') + (v.length > 4 ? '-' + v.slice(4) : '');
-    });
-    w.querySelector('.cal').addEventListener('click', () => {
-      h.value = iso(t.value) || '';
-      try { h.showPicker(); } catch { h.focus(); }
-    });
-    h.addEventListener('change', () => { t.value = dmy(h.value); });
-  });
+document.getElementById("modal").style.display="none";
+
 }
 
-/* Producto seleccionado */
-function setProd(p) {
-  prod = p;
-  const i = $('info');
-  if (!p) { i.hidden = true; return; }
-  i.hidden = false;
-  i.innerHTML = [['SKU', p.sku], ['Nombre', p.nombre], ['Categoría', p.categoria], ['Unidad', p.unidad],
-    ['Subcategoría', p.subcategoria], ['Marca', p.marca], ['Presentación', p.presentacion], ['Vida útil', (p.vida_util_dias || 0) + ' días']]
-    .map(([k, v]) => `<div><b>${k}</b>${esc(v) || '—'}</div>`).join('');
-}
-
-/* Formulario */
-function limpiar() {
-  $('form').reset(); editId = null; setProd(null);
-  $('ftitulo').textContent = 'Nueva recepción';
-  $('bguardar').textContent = 'Registrar recepción';
-  $('bcancelar').hidden = true;
-}
-function guardar(e) {
-  e.preventDefault();
-  if (!prod) return toast('Elige un producto de la lista', true);
-  const carn = prod.categoria === 'MATERIA PRIMA CARNICA';
-  const prov = $('prov').value.trim(), fac = $('fac').value.trim(), lote = $('lote').value.trim();
-  const cant = parseFloat($('cant').value), temp = $('temp').value === '' ? null : parseFloat($('temp').value);
-  const vtxt = $('venc').value.trim(), venc = vtxt ? iso(vtxt) : null;
-  if (!prov || !lote || !(cant > 0)) return toast('Completa proveedor, lote y una cantidad mayor a 0', true);
-  if (vtxt && !venc) return toast('La fecha de vencimiento no es válida. Usa DD-MM-AAAA', true);
-  if (!carn && !fac) return toast('Este producto requiere número de factura', true);
-  if (!carn && !venc) return toast('Este producto requiere fecha de vencimiento', true);
-  const alerta = temp != null && prod.temp_max != null && temp > prod.temp_max ? 1 : 0;
-  const emp = $('emp').value;
-  if (editId) {
-    const o = q('SELECT cantidad, saldo FROM entradas_mp WHERE id=?', [editId])[0];
-    run('UPDATE entradas_mp SET producto_id=?, proveedor=?, factura=?, lote=?, fecha_vencimiento=?, temperatura=?, tipo_empaque=?, cantidad=?, saldo=?, alerta_temp=? WHERE id=?',
-      [prod.id, prov, fac, lote, venc, temp, emp, cant, Math.max(0, o.saldo + cant - o.cantidad), alerta, editId]);
-    toast('Recepción actualizada');
-  } else {
-    const n = q("SELECT COALESCE(MAX(CAST(SUBSTR(consecutivo,5) AS INTEGER)),0)+1 AS n FROM entradas_mp WHERE consecutivo LIKE 'EMP-%'")[0].n;
-    const alm = (q('SELECT almacen_id AS a FROM almacenes_categorias WHERE categoria=?', [prod.categoria])[0] || {}).a ?? null;
-    const d = new Date();
-    const fecha = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, '0')}000`;
-    const cons = 'EMP-' + String(n).padStart(6, '0');
-    run('INSERT INTO entradas_mp (consecutivo, producto_id, proveedor, factura, lote, fecha_vencimiento, temperatura, tipo_empaque, cantidad, saldo, alerta_temp, fecha, usuario_id, almacen_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [cons, prod.id, prov, fac, lote, venc, temp, emp, cant, cant, alerta, fecha, userId, alm]);
-    toast(`Recepción ${cons} registrada`);
-  }
-  limpiar(); buscar();
-}
-function editar(id) {
-  const e = q('SELECT * FROM entradas_mp WHERE id=?', [id])[0]; if (!e) return;
-  const p = q('SELECT * FROM productos WHERE id=?', [e.producto_id])[0];
-  limpiar(); editId = id; setProd(p);
-  $('prod').value = `${p.sku} - ${p.nombre}`;
-  $('prov').value = e.proveedor; $('fac').value = e.factura; $('lote').value = e.lote;
-  $('venc').value = dmy(e.fecha_vencimiento); $('temp').value = e.temperatura ?? ''; $('cant').value = e.cantidad;
-  if (![...$('emp').options].some(o => o.value === e.tipo_empaque)) $('emp').add(new Option(e.tipo_empaque, e.tipo_empaque));
-  $('emp').value = e.tipo_empaque;
-  $('ftitulo').textContent = `Editando ${e.consecutivo}`;
-  $('bguardar').textContent = 'Guardar cambios'; $('bcancelar').hidden = false;
-  $('form').scrollIntoView({behavior: 'smooth'});
-}
-function eliminar(id) {
-  const e = q('SELECT consecutivo, cantidad, saldo FROM entradas_mp WHERE id=?', [id])[0]; if (!e) return;
-  if (e.saldo < e.cantidad) return toast(`${e.consecutivo} ya tiene consumos y no se puede eliminar`, true);
-  if (!confirm(`¿Eliminar la recepción ${e.consecutivo}?`)) return;
-  run('DELETE FROM entradas_mp WHERE id=?', [id]); toast(`${e.consecutivo} eliminada`); buscar();
-}
-
-/* Búsqueda */
-function buscar() {
-  const w = [], p = [], v = id => $(id).value.trim();
-  if (v('f-prov')) { w.push('e.proveedor LIKE ?'); p.push(`%${v('f-prov')}%`); }
-  if (v('f-lote')) { w.push('e.lote LIKE ?'); p.push(`%${v('f-lote')}%`); }
-  const t = $('f-prod').dataset.sku || v('f-prod');
-  if (t) { w.push('(p.sku LIKE ? OR p.nombre LIKE ?)'); p.push(`%${t}%`, `%${t}%`); }
-  if (v('f-cat')) { w.push('p.categoria = ?'); p.push(v('f-cat')); }
-  const d1 = iso(v('f-des')), d2 = iso(v('f-has'));
-  if (v('f-des') && !d1 || v('f-has') && !d2) return toast('Fecha inválida. Usa DD-MM-AAAA', true);
-  if (d1) { w.push('date(e.fecha) >= ?'); p.push(d1); }
-  if (d2) { w.push('date(e.fecha) <= ?'); p.push(d2); }
-  const from = `FROM entradas_mp e INNER JOIN productos p ON p.id = e.producto_id ${w.length ? 'WHERE ' + w.join(' AND ') : ''}`;
-  const total = q(`SELECT COUNT(*) AS n ${from}`, p)[0].n;
-  const rows = q(`SELECT e.id, e.consecutivo, e.fecha, p.sku, p.nombre, p.categoria, e.proveedor, e.factura, e.lote, e.fecha_vencimiento, e.cantidad, e.saldo, e.temperatura, e.alerta_temp, e.tipo_empaque ${from} ORDER BY e.id DESC LIMIT 300`, p);
-  $('cuenta').textContent = total > rows.length ? `Mostrando las ${rows.length} más recientes de ${total}. Afina los filtros para ver el resto.` : `${total} recepciones`;
-  $('tb').innerHTML = rows.map(r => `<tr>
-    <td>${esc(r.consecutivo)}</td><td>${dmy(r.fecha)}</td><td>${esc(r.sku)}</td><td>${esc(r.nombre)}</td><td>${esc(r.categoria)}</td>
-    <td>${esc(r.proveedor)}</td><td>${esc(r.factura)}</td><td>${esc(r.lote)}</td><td>${dmy(r.fecha_vencimiento)}</td>
-    <td class="n">${num(r.cantidad)}</td><td class="n">${num(r.saldo)}</td><td class="n ${r.alerta_temp ? 'alert' : ''}" title="${r.alerta_temp ? 'Sobre la temperatura máxima' : ''}">${num(r.temperatura)}</td>
-    <td>${esc(r.tipo_empaque)}</td>
-    <td><button class="sec sm" data-e="${r.id}">Editar</button> <button class="del sm" data-d="${r.id}">Eliminar</button></td></tr>`).join('')
-    || '<tr><td colspan="14" style="text-align:center;color:var(--mute);padding:20px">No hay recepciones con esos filtros.</td></tr>';
-}
-
-/* Vistas de consulta */
-const L = (sql, cols) => ({sql, cols});
-const VISTAS = {
-  inicio: {t: 'Inicio', ...L(`SELECT 'Productos activos' AS i, COUNT(*) AS v FROM productos WHERE activo=1
-    UNION ALL SELECT 'Recepciones de MP registradas', COUNT(*) FROM entradas_mp
-    UNION ALL SELECT 'Lotes de MP con saldo', COUNT(*) FROM entradas_mp WHERE saldo>0
-    UNION ALL SELECT 'Lotes de MP que vencen en 30 días', COUNT(*) FROM entradas_mp WHERE saldo>0 AND fecha_vencimiento BETWEEN date('now') AND date('now','+30 day')
-    UNION ALL SELECT 'Lotes de MP vencidos con saldo', COUNT(*) FROM entradas_mp WHERE saldo>0 AND fecha_vencimiento < date('now')
-    UNION ALL SELECT 'Pedidos sin entregar', COUNT(*) FROM pedidos WHERE estado IN ('PENDIENTE','EN PROCESO','PARCIAL','LISTO')`,
-    [['i', 'Indicador'], ['v', 'Valor', 'n']])},
-  pedidos: {t: 'Pedidos', nuevo: ['Nuevo pedido', () => formPedido()], ...L(`SELECT consecutivo, fecha, cliente, area, estado, fecha_requerida, observacion FROM pedidos ORDER BY id DESC`,
-    [['consecutivo', 'Consecutivo'], ['fecha', 'Fecha', 'd'], ['cliente', 'Cliente'], ['area', 'Área'], ['estado', 'Estado'], ['fecha_requerida', 'Fecha requerida', 'd'], ['observacion', 'Observación']])},
-  consumos: {t: 'Consumos', ...L(`SELECT o.consecutivo AS orden, o.fecha, pt.nombre AS terminado, o.lote AS lote_orden, p.sku, p.nombre AS mp, e.lote AS lote_mp, c.cantidad, p.unidad
-    FROM consumos c JOIN ordenes_produccion o ON o.id=c.orden_id JOIN entradas_mp e ON e.id=c.entrada_id JOIN productos p ON p.id=e.producto_id JOIN productos pt ON pt.id=o.producto_id ORDER BY c.id DESC`,
-    [['orden', 'Orden'], ['fecha', 'Fecha', 'd'], ['terminado', 'Producto terminado'], ['lote_orden', 'Lote orden'], ['sku', 'SKU MP'], ['mp', 'Materia prima'], ['lote_mp', 'Lote MP'], ['cantidad', 'Cantidad', 'n'], ['unidad', 'Unidad']])},
-  'inventario-mp': {t: 'Inventario MP', ...L(`SELECT p.sku, p.nombre, p.categoria, p.unidad, e.lote, e.fecha_vencimiento, e.saldo, a.nombre AS almacen
-    FROM entradas_mp e JOIN productos p ON p.id=e.producto_id LEFT JOIN almacenes a ON a.id=e.almacen_id WHERE e.saldo>0 ORDER BY e.fecha_vencimiento IS NULL, e.fecha_vencimiento, e.id`,
-    [['sku', 'SKU'], ['nombre', 'Producto'], ['categoria', 'Categoría'], ['unidad', 'Unidad'], ['lote', 'Lote'], ['fecha_vencimiento', 'Vencimiento', 'd'], ['saldo', 'Saldo', 'n'], ['almacen', 'Almacén']])},
-  'inventario-pt': {t: 'Inventario PT', ...L(`SELECT p.sku, p.nombre, p.unidad, b.lote, b.fecha_vencimiento, b.saldo, b.consecutivo, b.origen, a.nombre AS almacen
-    FROM bodega_lotes_pt b JOIN productos p ON p.id=b.producto_id LEFT JOIN almacenes a ON a.id=b.almacen_id WHERE b.saldo>0 ORDER BY b.fecha_vencimiento IS NULL, b.fecha_vencimiento, b.id`,
-    [['sku', 'SKU'], ['nombre', 'Producto'], ['unidad', 'Unidad'], ['lote', 'Lote'], ['fecha_vencimiento', 'Vencimiento', 'd'], ['saldo', 'Saldo', 'n'], ['consecutivo', 'Consecutivo'], ['origen', 'Origen'], ['almacen', 'Almacén']])},
-  almacenes: {t: 'Almacenes e inventarios', ...L(`SELECT m.fecha, t.nombre AS tipo, ao.nombre AS origen, ad.nombre AS destino, p.sku, p.nombre AS producto, m.lote, m.cantidad, m.unidad, m.referencia, m.motivo
-    FROM movimientos_almacen m JOIN productos p ON p.id=m.producto_id LEFT JOIN almacenes ao ON ao.id=m.almacen_origen_id LEFT JOIN almacenes ad ON ad.id=m.almacen_destino_id LEFT JOIN tipos_movimiento t ON t.id=m.tipo_movimiento_id ORDER BY m.id DESC LIMIT 1000`,
-    [['fecha', 'Fecha', 'd'], ['tipo', 'Movimiento'], ['origen', 'Origen'], ['destino', 'Destino'], ['sku', 'SKU'], ['producto', 'Producto'], ['lote', 'Lote'], ['cantidad', 'Cantidad', 'n'], ['unidad', 'Unidad'], ['referencia', 'Referencia'], ['motivo', 'Motivo']])},
-  productos: {t: 'Productos', nuevo: ['Nuevo producto', () => formProducto()], edit: formProducto, ...L(`SELECT id, sku, nombre, categoria, unidad, subcategoria, marca, presentacion, stock_minimo, vida_util_dias, CASE activo WHEN 1 THEN 'Sí' ELSE 'No' END AS activo FROM productos ORDER BY sku`,
-    [['sku', 'SKU'], ['nombre', 'Nombre'], ['categoria', 'Categoría'], ['unidad', 'Unidad'], ['subcategoria', 'Subcategoría'], ['marca', 'Marca'], ['presentacion', 'Presentación'], ['stock_minimo', 'Stock mínimo', 'n'], ['vida_util_dias', 'Vida útil (días)', 'n'], ['activo', 'Activo']])},
-  formulas: {t: 'Fórmulas', nuevo: ['Crear o editar fórmula', () => formFormula()], ...L(`SELECT pt.sku AS sku_pt, pt.nombre AS terminado, f.version, pi.sku AS sku_i, pi.nombre AS ingrediente, fi.cantidad_100kg, pi.unidad, fi.tipo_consumo
-    FROM formula_items fi JOIN formulas f ON f.id=fi.formula_id JOIN productos pt ON pt.id=f.producto_id JOIN productos pi ON pi.id=fi.producto_id WHERE f.activa=1 ORDER BY pt.sku, fi.id`,
-    [['sku_pt', 'SKU'], ['terminado', 'Producto terminado'], ['version', 'Versión'], ['sku_i', 'SKU ingrediente'], ['ingrediente', 'Ingrediente'], ['cantidad_100kg', 'Cantidad por 100 kg', 'n'], ['unidad', 'Unidad'], ['tipo_consumo', 'Consumo']])},
-  usuarios: {t: 'Usuarios', ...L(`SELECT id, username, rol, CASE activo WHEN 1 THEN 'Sí' ELSE 'No' END AS activo FROM usuarios ORDER BY id`,
-    [['id', 'Id'], ['username', 'Usuario'], ['rol', 'Rol'], ['activo', 'Activo']])},
-  auditoria: {t: 'Auditoría', ...L(`SELECT a.fecha, u.username AS usuario, a.accion, a.entidad, a.entidad_id, a.detalle FROM auditoria a LEFT JOIN usuarios u ON u.id=a.usuario_id ORDER BY a.id DESC LIMIT 1000`,
-    [['fecha', 'Fecha', 'd'], ['usuario', 'Usuario'], ['accion', 'Acción'], ['entidad', 'Entidad'], ['entidad_id', 'Id'], ['detalle', 'Detalle']])}
-};
-let vistaActual = '';
-function lista(k) {
-  vistaActual = k;
-  const v = VISTAS[k], rows = q(v.sql);
-  $('l-nuevo').hidden = !v.nuevo;
-  if (v.nuevo) { $('l-nuevo').textContent = v.nuevo[0]; $('l-nuevo').onclick = v.nuevo[1]; }
-  $('l-head').innerHTML = '<tr>' + v.cols.map(([, l, t]) => `<th${t === 'n' ? ' class="n"' : ''}>${l}</th>`).join('') + (v.edit ? '<th></th>' : '') + '</tr>';
-  $('l-body').innerHTML = rows.map(r => `<tr data-t="${esc(Object.values(r).map(x => x ?? '').join(' ').toLowerCase())}">` +
-    v.cols.map(([c, , t]) => `<td${t === 'n' ? ' class="n"' : ''}>${t === 'n' ? num(r[c]) : t === 'd' ? dmy(r[c]) : esc(r[c])}</td>`).join('') +
-    (v.edit ? `<td><button class="sec sm" data-id="${r.id}">Editar</button></td>` : '') + '</tr>').join('')
-    || '<tr><td colspan="99" style="text-align:center;color:var(--mute);padding:20px">No hay datos en esta lista.</td></tr>';
-  $('l-q').value = ''; filtrar();
-}
-function filtrar() {
-  const t = $('l-q').value.trim().toLowerCase(); let n = 0;
-  document.querySelectorAll('#l-body tr[data-t]').forEach(tr => { const s = !t || tr.dataset.t.includes(t); tr.hidden = !s; if (s) n++; });
-  $('l-cuenta').textContent = `${n} registros`;
-}
-function route() {
-  const k = location.hash.replace('#/', '') || 'inicio', rec = k === 'recepcion', v = VISTAS[k];
-  if (!rec && !v) { location.hash = '#/inicio'; return; }
-  $('v-recepcion').hidden = !rec; $('v-lista').hidden = rec;
-  $('titulo').textContent = rec ? 'Recepción de materia prima' : v.t;
-  document.querySelectorAll('nav a[data-v]').forEach(a => {
-    const on = a.dataset.v === k; a.classList.toggle('on', on);
-    on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
-  });
-  if (!rec) lista(k);
-}
-$('l-q').addEventListener('input', filtrar);
-window.addEventListener('hashchange', () => db && route());
-
-/* Formularios */
-const ahora = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, '0')}000`; };
-const lid = () => q('SELECT last_insert_rowid() AS id')[0].id;
-const aud = (a, e, id, d) => db.run('INSERT INTO auditoria (usuario_id, accion, entidad, entidad_id, detalle, fecha) VALUES (?,?,?,?,?,?)', [userId, a, e, String(id), d, ahora()]);
-const bad = m => { toast(m, true); return false; };
-const porSku = t => q('SELECT * FROM productos WHERE sku=?', [String(t).split(' - ')[0].trim()])[0];
-function tx(fn) {
-  try { db.run('BEGIN'); fn(); db.run('COMMIT'); setDirty(true); return true; }
-  catch (e) { try { db.run('ROLLBACK'); } catch {} return bad(e.message || 'No se pudo guardar'); }
-}
-function abrirDlg(t, html, ok) {
-  $('dt').textContent = t; $('dbody').innerHTML = html;
-  $('dform').onsubmit = e => { e.preventDefault(); if (ok() !== false) { $('dlg').close(); toast('Guardado. Descarga sicope.db para conservar los cambios'); cargarListas(); route(); } };
-  $('dlg').showModal();
-}
-$('dcancel').onclick = () => $('dlg').close();
-function cargarListas() {
-  const op = r => `<option value="${esc(r.sku)} - ${esc(r.nombre)}">`;
-  $('dl-prod').innerHTML = q('SELECT sku, nombre FROM productos WHERE activo=1 ORDER BY sku').map(op).join('');
-  $('dl-pt').innerHTML = q("SELECT sku, nombre FROM productos WHERE activo=1 AND categoria='PRODUCTO TERMINADO' ORDER BY sku").map(op).join('');
-}
-$('l-body').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) VISTAS[vistaActual].edit(+b.dataset.id); });
-
-/* Productos */
-function siguienteSku() {
-  for (const {sku} of q('SELECT sku FROM productos ORDER BY id DESC LIMIT 100')) {
-    const m = /^(.*?)(\d+)$/.exec(sku); if (!m) continue;
-    let n = +m[2];
-    for (;;) { n++; const c = m[1] + String(n).padStart(m[2].length, '0'); if (!q('SELECT 1 FROM productos WHERE sku=?', [c]).length) return c; }
-  }
-  return '0001';
-}
-function formProducto(id) {
-  const e = id ? q('SELECT * FROM productos WHERE id=?', [id])[0] : null;
-  const v = k => esc(e ? e[k] ?? '' : '');
-  const cats = q('SELECT nombre FROM categorias ORDER BY nombre');
-  abrirDlg(e ? `Editar ${e.sku}` : 'Nuevo producto', `<div class="grid">
-    <label>SKU<input id="p-sku" value="${v('sku')}" placeholder="${e ? '' : 'Automático: ' + siguienteSku()}"></label>
-    <label class="s2">Nombre<input id="p-nom" value="${v('nombre')}"></label>
-    <label>Categoría<select id="p-cat">${cats.map(c => `<option${e && e.categoria === c.nombre ? ' selected' : ''}>${esc(c.nombre)}</option>`).join('')}</select></label>
-    <label>Unidad<input id="p-uni" value="${v('unidad')}" placeholder="La de la categoría"></label>
-    <label>Subcategoría<input id="p-sub" value="${v('subcategoria')}"></label>
-    <label>Marca<input id="p-mar" value="${v('marca')}"></label>
-    <label>Presentación<input id="p-pre" value="${v('presentacion')}"></label>
-    <label>Stock mínimo<input id="p-min" type="number" step="any" min="0" value="${v('stock_minimo') || 0}"></label>
-    <label>Temperatura máxima °C<input id="p-tmp" type="number" step="any" value="${v('temp_max')}"></label>
-    <label>Vida útil (días)<input id="p-vida" type="number" min="1" max="3650" value="${e && e.vida_util_dias ? e.vida_util_dias : ''}"></label>
-    ${e ? `<label>Activo<select id="p-act"><option value="1"${e.activo ? ' selected' : ''}>Sí</option><option value="0"${e.activo ? '' : ' selected'}>No</option></select></label>` : ''}</div>`, () => guardarProducto(e));
-}
-function guardarProducto(e) {
-  const g = i => $(i).value.trim(), nom = g('p-nom'), cat = g('p-cat');
-  if (!nom) return bad('El nombre es obligatorio');
-  const unidad = g('p-uni') || (q('SELECT unidad FROM categorias WHERE nombre=?', [cat])[0] || {}).unidad || 'kg';
-  const sku = g('p-sku') || (e ? '' : siguienteSku());
-  if (!sku || q('SELECT 1 FROM productos WHERE sku=? AND id<>?', [sku, e ? e.id : 0]).length) return bad(`El SKU «${sku}» está vacío o ya lo usa otro producto`);
-  const vida = g('p-vida') === '' ? null : parseInt(g('p-vida'), 10);
-  if (vida != null && !(vida >= 1 && vida <= 3650)) return bad('La vida útil debe estar entre 1 y 3650 días');
-  const tmp = g('p-tmp') === '' ? null : parseFloat(g('p-tmp')), min = parseFloat(g('p-min')) || 0;
-  const f = [sku, nom, cat, unidad, min, tmp, g('p-sub'), g('p-mar'), g('p-pre'), vida];
-  return tx(() => {
-    if (e) {
-      db.run('UPDATE productos SET sku=?, nombre=?, categoria=?, unidad=?, stock_minimo=?, temp_max=?, subcategoria=?, marca=?, presentacion=?, vida_util_dias=?, activo=? WHERE id=?', [...f, +$('p-act').value, e.id]);
-      aud('EDITAR', 'producto', e.id, `${e.sku}: ${sku} ${nom}`);
-    } else {
-      db.run('INSERT INTO productos (sku, nombre, categoria, unidad, stock_minimo, temp_max, subcategoria, marca, presentacion, vida_util_dias, activo) VALUES (?,?,?,?,?,?,?,?,?,?,1)', f);
-      aud('CREAR', 'producto', lid(), `${sku} ${nom}`);
-    }
-  });
-}
-
-/* Fórmulas */
-function filaIng(it) {
-  const d = document.createElement('div'); d.className = 'fr';
-  d.innerHTML = `<label>Ingrediente<input class="f-ing" list="dl-prod" value="${it ? esc(it.sku + ' - ' + it.nombre) : ''}"></label>
-    <label>Cant. por 100 kg<input class="f-qty" type="number" step="any" min="0" value="${it ? it.cantidad_100kg : ''}"></label>
-    <label>Consumo<select class="f-tipo">${['PROCESO', 'EMPAQUE', 'MADRE'].map(t => `<option${it && it.tipo_consumo === t ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
-    <button type="button" class="sec sm" title="Quitar">✕</button>`;
-  d.querySelector('button').onclick = () => { d.remove(); totalF(); };
-  d.querySelector('.f-qty').oninput = d.querySelector('.f-tipo').onchange = totalF;
-  $('f-rows').appendChild(d);
-}
-function totalF() {
-  $('f-tot').textContent = [...document.querySelectorAll('#f-rows .fr')].reduce((s, r) => r.querySelector('.f-tipo').value === 'PROCESO' ? s + (+r.querySelector('.f-qty').value || 0) : s, 0).toFixed(3);
-}
-function cargaF() {
-  $('f-rows').innerHTML = '';
-  const pt = +$('f-pt').value;
-  const its = q('SELECT fi.cantidad_100kg, fi.tipo_consumo, p.sku, p.nombre FROM formula_items fi JOIN formulas f ON f.id=fi.formula_id JOIN productos p ON p.id=fi.producto_id WHERE f.producto_id=? AND f.activa=1 ORDER BY fi.id', [pt]);
-  const ver = q('SELECT MAX(version) AS v FROM formulas WHERE producto_id=?', [pt])[0].v || 0;
-  $('f-ver').textContent = ver ? `Versión actual: v${ver}. Al guardar se crea la v${ver + 1} y la anterior queda en historial.` : 'Este producto no tiene fórmula. Se creará la v1.';
-  its.forEach(filaIng); if (!its.length) filaIng(); totalF();
-}
-function formFormula() {
-  const pts = q("SELECT id, sku, nombre FROM productos WHERE categoria='PRODUCTO TERMINADO' AND activo=1 ORDER BY sku");
-  abrirDlg('Crear o editar fórmula', `<label>Producto terminado<select id="f-pt">${pts.map(p => `<option value="${p.id}">${esc(p.sku)} - ${esc(p.nombre)}</option>`).join('')}</select></label>
-    <p class="hint" id="f-ver"></p><div id="f-rows"></div>
-    <div class="row" style="align-items:center;margin-top:6px"><button type="button" class="sec sm" id="f-add">+ Agregar ingrediente</button><span class="st">Suma PROCESO por 100 kg: <b id="f-tot">0</b></span></div>`, guardarFormula);
-  $('f-pt').onchange = cargaF; $('f-add').onclick = () => filaIng(); cargaF();
-}
-function guardarFormula() {
-  const pt = +$('f-pt').value, items = [];
-  for (const r of document.querySelectorAll('#f-rows .fr')) {
-    const t = r.querySelector('.f-ing').value.trim(), qty = parseFloat(r.querySelector('.f-qty').value), tipo = r.querySelector('.f-tipo').value;
-    if (!t && isNaN(qty)) continue;
-    const ing = porSku(t);
-    if (!ing || !(qty > 0)) return bad('Revisa los ingredientes y sus cantidades');
-    const terminado = ing.categoria === 'PRODUCTO TERMINADO', kg = (ing.unidad || '').trim().toLowerCase() === 'kg';
-    if (tipo === 'MADRE' && !(terminado && kg)) return bad(`El producto madre ${ing.sku} debe ser producto terminado en kg`);
-    if (tipo !== 'MADRE' && terminado) return bad('Solo un producto terminado en kg puede ser producto madre');
-    if (tipo === 'PROCESO' && !kg) return bad(`El ingrediente ${ing.sku} debe tener unidad kg`);
-    items.push({id: ing.id, sku: ing.sku, qty, tipo});
-  }
-  if (!items.length) return bad('Agrega al menos un ingrediente');
-  if (new Set(items.map(i => i.id)).size !== items.length) return bad('Hay ingredientes repetidos');
-  return tx(() => {
-    const ver = (q('SELECT MAX(version) AS v FROM formulas WHERE producto_id=?', [pt])[0].v || 0) + 1;
-    db.run('UPDATE formulas SET activa=0 WHERE producto_id=? AND activa=1', [pt]);
-    db.run('INSERT INTO formulas (producto_id, version, activa) VALUES (?,?,1)', [pt, ver]);
-    const fid = lid();
-    items.forEach(i => db.run('INSERT INTO formula_items (formula_id, producto_id, cantidad_100kg, tipo_consumo) VALUES (?,?,?,?)', [fid, i.id, i.qty, i.tipo]));
-    aud(ver > 1 ? 'EDITAR' : 'CREAR', 'formula', fid, `${q('SELECT sku FROM productos WHERE id=?', [pt])[0].sku} v${ver}: ` + items.map(i => `${i.sku}=${i.qty} ${i.tipo}`).join(', '));
-  });
-}
-
-/* Pedidos */
-function filaPed() {
-  const d = document.createElement('div'); d.className = 'fr p';
-  d.innerHTML = `<label>Producto terminado<input class="d-prod" list="dl-pt"></label><label>Cantidad<input class="d-qty" type="number" step="any" min="0"></label><button type="button" class="sec sm" title="Quitar">✕</button>`;
-  d.querySelector('button').onclick = () => d.remove();
-  $('pd-rows').appendChild(d);
-}
-function siguienteLote() {
-  const d = new Date(), f = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`, pre = f.slice(2, 4) + f.slice(5, 7) + f.slice(8, 10);
-  const ls = [...q('SELECT lote FROM ordenes_produccion WHERE lote LIKE ?', [pre + '%']),
-    ...q("SELECT i.lote FROM pedido_items i JOIN pedidos p ON p.id=i.pedido_id WHERE p.area='PROCESO' AND i.lote LIKE ?", [pre + '%'])].map(r => r.lote);
-  const mx = Math.max(0, ...ls.filter(l => l && l.length === 8 && /^\d\d$/.test(l.slice(6))).map(l => +l.slice(6)));
-  const s = q('SELECT consecutivo AS c FROM lotes_secuencia_diaria WHERE fecha=?', [f])[0];
-  const n = Math.max((s ? s.c : 0) + 1, mx + 1);
-  db.run('INSERT OR REPLACE INTO lotes_secuencia_diaria (fecha, consecutivo) VALUES (?,?)', [f, n]);
-  return pre + p2(n);
-}
-function formPedido() {
-  abrirDlg('Nuevo pedido', `<div class="grid"><label class="s2">Cliente<input id="pd-cli"></label>
-    <label>Área<select id="pd-area"><option>DESPACHO</option><option>EMPAQUE</option><option>PROCESO</option></select></label>
-    <label>Fecha requerida<input id="pd-fec" type="date"></label><label class="s4">Observación<input id="pd-obs"></label></div>
-    <div id="pd-rows" style="margin-top:12px"></div><button type="button" class="sec sm" id="pd-add">+ Agregar producto</button>
-    <p class="hint">En pedidos para Proceso, cada producto recibe su lote YYMMDDNN al guardar.</p>`, guardarPedido);
-  $('pd-add').onclick = filaPed; filaPed();
-}
-function guardarPedido() {
-  const cli = $('pd-cli').value.trim(), area = $('pd-area').value, items = [];
-  if (cli.length < 2) return bad('Escribe el nombre del cliente');
-  for (const r of document.querySelectorAll('#pd-rows .fr')) {
-    const t = r.querySelector('.d-prod').value.trim(), qty = parseFloat(r.querySelector('.d-qty').value);
-    if (!t && isNaN(qty)) continue;
-    const pr = porSku(t);
-    if (!pr || pr.categoria !== 'PRODUCTO TERMINADO') return bad('Todos los productos del pedido deben ser productos terminados');
-    if (!(qty > 0)) return bad('Las cantidades deben ser mayores a 0');
-    items.push({id: pr.id, qty});
-  }
-  if (!items.length) return bad('Agrega al menos un producto');
-  if (new Set(items.map(i => i.id)).size !== items.length) return bad('No repitas productos en el pedido');
-  return tx(() => {
-    const fecha = ahora();
-    db.run("INSERT INTO pedidos (cliente, area, estado, fecha_requerida, observacion, usuario_id, fecha) VALUES (?,?,'PENDIENTE',?,?,?,?)", [cli, area, $('pd-fec').value || null, $('pd-obs').value.trim(), userId, fecha]);
-    const id = lid(), cons = 'PD-' + String(id).padStart(6, '0');
-    db.run('UPDATE pedidos SET consecutivo=? WHERE id=?', [cons, id]);
-    items.forEach(i => db.run('INSERT INTO pedido_items (pedido_id, producto_id, cantidad, entregado, lote) VALUES (?,?,?,0,?)', [id, i.id, i.qty, area === 'PROCESO' ? siguienteLote() : null]));
-    db.run('INSERT INTO pedido_mensajes (pedido_id, usuario_id, texto, fecha) VALUES (?,?,?,?)', [id, userId, `Se creó el pedido para ${area.toLowerCase()}`, fecha]);
-    aud('CREAR', 'pedido', id, `${cons} ${cli} → ${area}, ${items.length} producto(s)`);
-  });
-}
-
-/* Arranque */
-function abrir(buf) {
-  try {
-    db = new SQL.Database(new Uint8Array(buf));
-    q('SELECT 1 FROM entradas_mp LIMIT 1'); q('SELECT 1 FROM productos LIMIT 1');
-  } catch { return toast('Ese archivo no parece ser sicope.db (faltan las tablas productos o entradas_mp)', true); }
-  const u = q("SELECT id FROM usuarios WHERE rol='administrador' AND activo=1 ORDER BY id LIMIT 1")[0];
-  userId = u ? u.id : 1;
-  $('f-cat').innerHTML = '<option value="">Todas</option>' + q('SELECT nombre FROM categorias ORDER BY nombre').map(c => `<option>${esc(c.nombre)}</option>`).join('');
-  $('abrir').hidden = true; $('app').hidden = false;
-  setDirty(false); cargarListas(); limpiar(); buscar(); route();
-}
-ac($('prod'), t => buscarProd(t, true), p => setProd(p));
-ac($('f-prod'), t => buscarProd(t, false), p => { $('f-prod').dataset.sku = p ? p.sku : ''; });
-initDates();
-$('form').addEventListener('submit', guardar);
-$('blimpiar').onclick = $('bcancelar').onclick = limpiar;
-$('bgen').onclick = () => { const d = new Date(); $('lote').value = String(d.getFullYear()).slice(2) + p2(d.getMonth() + 1) + p2(d.getDate()); };
-$('bbuscar').onclick = buscar;
-$('bfclear').onclick = () => { ['f-prov', 'f-lote', 'f-prod', 'f-des', 'f-has', 'f-cat'].forEach(i => $(i).value = ''); $('f-prod').dataset.sku = ''; buscar(); };
-document.querySelectorAll('#f-prov,#f-lote,#f-des,#f-has').forEach(i => i.addEventListener('keydown', e => e.key === 'Enter' && buscar()));
-$('tb').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  b.dataset.e ? editar(+b.dataset.e) : eliminar(+b.dataset.d);
-});
-$('bdescargar').onclick = () => {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([db.export()], {type: 'application/x-sqlite3'}));
-  a.download = 'sicope.db'; a.click(); URL.revokeObjectURL(a.href);
-  setDirty(false); toast('sicope.db descargada. Reemplaza el archivo en tu repositorio');
-};
-$('archivo').addEventListener('change', async e => { if (e.target.files[0]) abrir(await e.target.files[0].arrayBuffer()); });
-window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-initSqlJs({locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`}).then(async S => {
-  SQL = S;
-  try {
-    const r = await fetch('sicope.db', {cache: 'no-store'});
-    if (!r.ok) throw 0;
-    abrir(await r.arrayBuffer());
-  } catch { $('estado').textContent = 'Sin base de datos'; $('abrir').hidden = false; }
-}).catch(() => { $('estado').textContent = 'No se pudo cargar sql.js. Revisa tu conexión.'; });
 </script>
+
 </body>
 </html>
