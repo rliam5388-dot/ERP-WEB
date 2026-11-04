@@ -2,27 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Inspección Semanal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Semanal BPM</title>
 
 <style>
 
 *{
     box-sizing:border-box;
-    margin:0;
-    padding:0;
 }
 
 body{
+    margin:0;
+    padding:20px;
     font-family:Segoe UI,Arial,sans-serif;
-    background:#f5f6f8;
+    background:#f4f6f9;
     color:#222;
 }
 
 .container{
     max-width:1400px;
     margin:auto;
-    padding:20px;
 }
 
 h1{
@@ -43,14 +42,14 @@ h1{
 
 .card{
     background:white;
-    border-radius:10px;
     padding:20px;
+    border-radius:12px;
     box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
 
 .card h2{
-    font-size:30px;
-    margin-bottom:5px;
+    margin:0;
+    font-size:32px;
 }
 
 .ok{
@@ -58,7 +57,7 @@ h1{
 }
 
 .pending{
-    color:#b7791f;
+    color:#b45309;
 }
 
 .filters{
@@ -68,57 +67,12 @@ h1{
     margin-bottom:20px;
 }
 
-input,select{
+input,
+select{
     width:100%;
     padding:10px;
     border:1px solid #ccc;
     border-radius:8px;
-}
-
-.days{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-    gap:15px;
-    margin-bottom:25px;
-}
-
-.day-card{
-    background:white;
-    border-radius:10px;
-    padding:15px;
-    box-shadow:0 2px 6px rgba(0,0,0,.08);
-}
-
-.day-card h3{
-    margin-bottom:10px;
-}
-
-.item{
-    padding:8px;
-    border-bottom:1px solid #eee;
-    cursor:pointer;
-}
-
-.item:hover{
-    background:#f8f8f8;
-}
-
-.badge{
-    display:inline-block;
-    padding:3px 8px;
-    border-radius:6px;
-    font-size:12px;
-    font-weight:bold;
-}
-
-.badge-ok{
-    background:#d9f7df;
-    color:#14803c;
-}
-
-.badge-pending{
-    background:#fff4d4;
-    color:#a36b00;
 }
 
 table{
@@ -135,66 +89,83 @@ th{
 th,td{
     padding:10px;
     border:1px solid #ddd;
-    text-align:left;
 }
 
 tr:nth-child(even){
     background:#f8f8f8;
 }
 
+.badge{
+    padding:4px 8px;
+    border-radius:6px;
+    font-weight:bold;
+    font-size:12px;
+}
+
+.badge-ok{
+    background:#d8f5dc;
+    color:#116530;
+}
+
+.badge-pend{
+    background:#fff0cc;
+    color:#9a6700;
+}
+
+button.detalle{
+    padding:5px 10px;
+    cursor:pointer;
+}
+
 .modal{
+    display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,.45);
-    display:none;
+    background:rgba(0,0,0,.55);
     justify-content:center;
     align-items:center;
 }
 
-.modal-box{
+.modal-content{
     width:min(800px,95%);
     background:white;
-    border-radius:10px;
     padding:20px;
-}
-
-.modal-box h2{
-    margin-bottom:15px;
+    border-radius:12px;
 }
 
 .close{
     margin-top:15px;
     padding:10px 15px;
-    border:none;
-    background:#2563eb;
-    color:white;
-    border-radius:8px;
 }
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
 <h1>Control Semanal BPM</h1>
-<p class="sub">Seguimiento semanal de inspecciones y verificaciones.</p>
+
+<p class="sub">
+Seguimiento de verificaciones semanales.
+</p>
 
 <div class="stats">
 
 <div class="card">
-<h2 id="total">18</h2>
-<div>Total registros</div>
+<h2 id="total">0</h2>
+<div>Total Registros</div>
 </div>
 
 <div class="card">
-<h2 class="ok" id="ok">13</h2>
+<h2 class="ok" id="ok">0</h2>
 <div>Conformes</div>
 </div>
 
 <div class="card">
-<h2 class="pending" id="pend">5</h2>
-<div>Sin evaluar</div>
+<h2 class="pending" id="pend">0</h2>
+<div>Pendientes</div>
 </div>
 
 </div>
@@ -203,10 +174,14 @@ tr:nth-child(even){
 
 <input
 id="buscar"
-placeholder="Buscar código o descripción...">
+placeholder="Buscar código o descripción">
 
 <select id="dia">
-<option value="">Todos los días</option>
+
+<option value="">
+Todos los días
+</option>
+
 <option>lunes</option>
 <option>martes</option>
 <option>miércoles</option>
@@ -214,191 +189,41 @@ placeholder="Buscar código o descripción...">
 <option>viernes</option>
 <option>sábado</option>
 <option>domingo</option>
+
 </select>
 
 <select id="estado">
-<option value="">Todos los estados</option>
+
+<option value="">
+Todos los estados
+</option>
+
 <option>OK</option>
 <option>PENDIENTE</option>
+
 </select>
-
-</div>
-
-<div class="days">
-
-<div class="day-card">
-<h3>Lunes</h3>
-
-<div class="item"
-onclick="detalle(
-'4.3.1',
-'El hielo se fabrica con agua potable y se manipula correctamente.',
-'OK',
-'26/10/2026 10:51',
-'lunes'
-)">
-4.3.1
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-5.3.2
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-5.2.1
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-5.1.2
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-7.2
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-</div>
-
-<div class="day-card">
-<h3>Martes</h3>
-
-<div class="item">
-5.1.5
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-7.7
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-</div>
-
-<div class="day-card">
-<h3>Miércoles</h3>
-
-<div class="item">
-7.8
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-8.1
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-</div>
-
-<div class="day-card">
-<h3>Jueves</h3>
-
-<div class="item">
-7.6
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-6.1.2
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-5.3.4
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-5.1.1
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-<div class="item">
-2.3.1
-<span class="badge badge-ok">
-OK
-</span>
-</div>
-
-</div>
 
 </div>
 
 <div class="card">
 
-<h3 style="margin-bottom:15px;">
-Detalle General
-</h3>
-
 <table>
 
 <thead>
+
 <tr>
+
 <th>ID</th>
 <th>Estado</th>
 <th>Fecha</th>
 <th>Día</th>
+<th>Detalle</th>
+
 </tr>
+
 </thead>
 
-<tbody>
-
-<tr>
-<td>4.3.1</td>
-<td>OK</td>
-<td>26/10/2026 10:51</td>
-<td>Lunes</td>
-</tr>
-
-<tr>
-<td>5.3.2</td>
-<td>OK</td>
-<td>26/10/2026 21:11</td>
-<td>Lunes</td>
-</tr>
-
-<tr>
-<td>5.2.1</td>
-<td>OK</td>
-<td>26/10/2026 21:00</td>
-<td>Lunes</td>
-</tr>
-
-<tr>
-<td>5.1.2</td>
-<td>OK</td>
-<td>26/10/2026 10:30</td>
-<td>Lunes</td>
-</tr>
+<tbody id="tabla">
 
 </tbody>
 
@@ -408,9 +233,9 @@ Detalle General
 
 </div>
 
-<div class="modal" id="modal">
+<div id="modal" class="modal">
 
-<div class="modal-box">
+<div class="modal-content">
 
 <h2 id="m_id"></h2>
 
@@ -438,33 +263,322 @@ Cerrar
 
 <script>
 
-function detalle(
-id,
-descripcion,
-estado,
-fecha,
-dia
-){
+const datos = [
 
-document.getElementById("m_id").innerText=id;
+{
+id:"4.3.1",
+descripcion:"El hielo se fabrica con agua potable, y se manipula, almacena y utiliza de modo que está protegido contra la contaminación.",
+estado:"OK",
+fecha:"26/10/2026 10:51",
+dia:"lunes"
+},
 
-document.getElementById("m_desc").innerText=descripcion;
+{
+id:"5.3.2",
+descripcion:"El operario destacado en áreas limpias no ingresa a áreas sucias durante el proceso.",
+estado:"OK",
+fecha:"26/10/2026 21:11",
+dia:"lunes"
+},
 
-document.getElementById("m_estado").innerText=estado;
+{
+id:"5.2.1",
+descripcion:"Uso de uniforme limpio y exclusivo.",
+estado:"OK",
+fecha:"26/10/2026 21:00",
+dia:"lunes"
+},
 
-document.getElementById("m_fecha").innerText=fecha;
+{
+id:"5.1.2",
+descripcion:"Chairas y cuchillos en perfecto estado higiénico.",
+estado:"OK",
+fecha:"26/10/2026 10:30",
+dia:"lunes"
+},
 
-document.getElementById("m_dia").innerText=dia;
+{
+id:"7.2",
+descripcion:"Conservación de carne entre -1°C y 7°C.",
+estado:"OK",
+fecha:"26/10/2026 10:15",
+dia:"lunes"
+},
 
-document.getElementById("modal").style.display="flex";
+{
+id:"5.1.5",
+descripcion:"Aseo personal adecuado.",
+estado:"OK",
+fecha:"27/10/2026 21:08",
+dia:"martes"
+},
+
+{
+id:"7.7",
+descripcion:"Carne empacada almacenada por especie.",
+estado:"OK",
+fecha:"27/10/2026 21:30",
+dia:"martes"
+},
+
+{
+id:"7.8",
+descripcion:"Material de empaque protegido.",
+estado:"OK",
+fecha:"28/10/2026 22:47",
+dia:"miércoles"
+},
+
+{
+id:"8.1",
+descripcion:"Resumen de embarque presente.",
+estado:"OK",
+fecha:"28/10/2026 23:00",
+dia:"miércoles"
+},
+
+{
+id:"7.6",
+descripcion:"Buena circulación de aire en cámaras.",
+estado:"OK",
+fecha:"29/10/2026 22:00",
+dia:"jueves"
+},
+
+{
+id:"6.1.2",
+descripcion:"Capacidad de instalaciones adecuada.",
+estado:"OK",
+fecha:"29/10/2026 22:30",
+dia:"jueves"
+},
+
+{
+id:"5.3.4",
+descripcion:"Control de visitantes.",
+estado:"OK",
+fecha:"29/10/2026 22:45",
+dia:"jueves"
+},
+
+{
+id:"5.1.1",
+descripcion:"Lavado de manos obligatorio.",
+estado:"OK",
+fecha:"29/10/2026 23:00",
+dia:"jueves"
+},
+
+{
+id:"2.3.1",
+descripcion:"Lavamanos adecuados.",
+estado:"OK",
+fecha:"29/10/2026 00:00",
+dia:"jueves"
+},
+
+{
+id:"3.2.1",
+descripcion:"Uso exclusivo de equipo.",
+estado:"PENDIENTE",
+fecha:"30/10/2026 00:00",
+dia:"viernes"
+},
+
+{
+id:"2.1.1",
+descripcion:"Filtro sanitario con pila y detergente.",
+estado:"PENDIENTE",
+fecha:"30/10/2026 00:00",
+dia:"viernes"
+},
+
+{
+id:"2.1.2",
+descripcion:"Pediluvio con desinfectante activo.",
+estado:"PENDIENTE",
+fecha:"30/10/2026 00:00",
+dia:"viernes"
+},
+
+{
+id:"2.2.2",
+descripcion:"Instalaciones para lavado de manos.",
+estado:"PENDIENTE",
+fecha:"30/10/2026 00:00",
+dia:"viernes"
+},
+
+{
+id:"5.3.5",
+descripcion:"Bigote, barba y cabello protegidos.",
+estado:"PENDIENTE",
+fecha:"01/11/2026 00:00",
+dia:"domingo"
+},
+
+{
+id:"6.1.5",
+descripcion:"Descongelamiento bajo 7°C.",
+estado:"PENDIENTE",
+fecha:"01/11/2026 00:00",
+dia:"domingo"
+}
+
+];
+
+function actualizarResumen(){
+
+document.getElementById("total").textContent = datos.length;
+
+document.getElementById("ok").textContent =
+datos.filter(x=>x.estado==="OK").length;
+
+document.getElementById("pend").textContent =
+datos.filter(x=>x.estado==="PENDIENTE").length;
+
+}
+
+function render(lista){
+
+let html='';
+
+lista.forEach(x=>{
+
+html += `
+<tr>
+
+<td>${x.id}</td>
+
+<td>
+
+<span class="badge ${x.estado==='OK'?'badge-ok':'badge-pend'}">
+
+${x.estado}
+
+</span>
+
+</td>
+
+<td>${x.fecha}</td>
+
+<td>${x.dia}</td>
+
+<td>
+
+<button
+class="detalle"
+onclick="verDetalle('${x.id}')">
+
+Ver
+
+</button>
+
+</td>
+
+</tr>
+`;
+
+});
+
+document.getElementById("tabla").innerHTML=html;
+
+}
+
+function aplicarFiltros(){
+
+const texto =
+document.getElementById("buscar")
+.value
+.toLowerCase();
+
+const dia =
+document.getElementById("dia")
+.value
+.toLowerCase();
+
+const estado =
+document.getElementById("estado")
+.value
+.toUpperCase();
+
+const resultado = datos.filter(x=>{
+
+const t =
+
+x.id.toLowerCase().includes(texto)
+||
+x.descripcion.toLowerCase().includes(texto);
+
+const d =
+!dia || x.dia===dia;
+
+const e =
+!estado || x.estado===estado;
+
+return t && d && e;
+
+});
+
+render(resultado);
+
+}
+
+function verDetalle(id){
+
+const r =
+datos.find(x=>x.id===id);
+
+document.getElementById("m_id")
+.innerText=r.id;
+
+document.getElementById("m_desc")
+.innerText=r.descripcion;
+
+document.getElementById("m_estado")
+.innerText=r.estado;
+
+document.getElementById("m_fecha")
+.innerText=r.fecha;
+
+document.getElementById("m_dia")
+.innerText=r.dia;
+
+document.getElementById("modal")
+.style.display="flex";
 
 }
 
 function cerrarModal(){
 
-document.getElementById("modal").style.display="none";
+document.getElementById("modal")
+.style.display="none";
 
 }
+
+document
+.getElementById("buscar")
+.addEventListener(
+"keyup",
+aplicarFiltros
+);
+
+document
+.getElementById("dia")
+.addEventListener(
+"change",
+aplicarFiltros
+);
+
+document
+.getElementById("estado")
+.addEventListener(
+"change",
+aplicarFiltros
+);
+
+actualizarResumen();
+render(datos);
 
 </script>
 
