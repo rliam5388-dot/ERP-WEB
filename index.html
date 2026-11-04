@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recepción de Materia Prima</title>
+
+<title>SICOPE | Recepción MP</title>
 
 <style>
 
@@ -14,8 +15,8 @@
 }
 
 body{
-    font-family:'Segoe UI',sans-serif;
-    background:#f5f7fb;
+    font-family:Segoe UI,Arial,sans-serif;
+    background:#f4f6f9;
 }
 
 .layout{
@@ -26,7 +27,7 @@ body{
 /* MENU */
 
 .sidebar{
-    width:260px;
+    width:240px;
     background:#0f172a;
     color:white;
     padding:20px;
@@ -46,7 +47,6 @@ body{
     padding:12px;
     margin-bottom:5px;
     border-radius:8px;
-    transition:.2s;
 }
 
 .menu a:hover{
@@ -60,47 +60,22 @@ body{
     padding:25px;
 }
 
-.header{
-    margin-bottom:20px;
-}
-
-.header h1{
+h1{
     color:#0f172a;
 }
 
-.header p{
+.sub{
     color:#64748b;
-}
-
-/* KPI */
-
-.kpis{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:15px;
+    margin-top:5px;
     margin-bottom:20px;
 }
-
-.kpi{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 5px rgba(0,0,0,.08);
-}
-
-.kpi h2{
-    color:#2563eb;
-    margin-bottom:5px;
-}
-
-/* TARJETAS */
 
 .card{
     background:white;
-    padding:20px;
     border-radius:12px;
+    padding:20px;
     margin-bottom:20px;
-    box-shadow:0 2px 5px rgba(0,0,0,.08);
+    box-shadow:0 2px 4px rgba(0,0,0,.08);
 }
 
 .card h3{
@@ -111,8 +86,7 @@ body{
 
 .form{
     display:grid;
-    grid-template-columns:
-    repeat(auto-fit,minmax(260px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
     gap:15px;
 }
 
@@ -120,11 +94,12 @@ label{
     display:flex;
     flex-direction:column;
     gap:5px;
-    font-size:14px;
     font-weight:600;
+    font-size:14px;
 }
 
-input,select{
+input,
+select{
     padding:10px;
     border:1px solid #cbd5e1;
     border-radius:8px;
@@ -136,6 +111,19 @@ select:focus{
     border-color:#2563eb;
 }
 
+/* LOTE */
+
+.lote-group{
+    display:flex;
+    gap:10px;
+}
+
+.lote-group input{
+    flex:1;
+}
+
+/* BOTONES */
+
 .actions{
     margin-top:20px;
     display:flex;
@@ -143,23 +131,23 @@ select:focus{
 }
 
 button{
-    padding:12px 18px;
     border:none;
+    padding:10px 18px;
     border-radius:8px;
     cursor:pointer;
     font-weight:600;
 }
 
-.btn-primary{
+.primary{
     background:#2563eb;
     color:white;
 }
 
-.btn-primary:hover{
+.primary:hover{
     background:#1d4ed8;
 }
 
-.btn-secondary{
+.secondary{
     background:#e2e8f0;
 }
 
@@ -173,34 +161,35 @@ table{
 th{
     background:#0f172a;
     color:white;
-    text-align:left;
 }
 
 th,td{
-    border:1px solid #e5e7eb;
     padding:10px;
+    border:1px solid #e5e7eb;
 }
 
 tr:nth-child(even){
     background:#f8fafc;
 }
 
-.info-producto{
+/* INFO PRODUCTO */
+
+.info{
+    margin-top:15px;
     background:#f8fafc;
-    border:1px solid #e5e7eb;
-    padding:10px;
+    border:1px solid #e2e8f0;
     border-radius:8px;
-    margin-top:10px;
+    padding:10px;
+    color:#334155;
 }
 
 </style>
 
 </head>
+
 <body>
 
 <div class="layout">
-
-    <!-- MENU -->
 
     <aside class="sidebar">
 
@@ -209,12 +198,11 @@ tr:nth-child(even){
         </div>
 
         <div class="menu">
-            <a href="#">Dashboard</a>
+            <a href="#">Inicio</a>
             <a href="#">Recepción MP</a>
             <a href="#">Inventario</a>
             <a href="#">Kardex</a>
             <a href="#">Producción</a>
-            <a href="#">Formulación</a>
             <a href="#">Despachos</a>
             <a href="#">Reportes</a>
             <a href="#">Configuración</a>
@@ -222,40 +210,13 @@ tr:nth-child(even){
 
     </aside>
 
-    <!-- CONTENIDO -->
-
     <main class="content">
 
-        <div class="header">
-            <h1>Recepción de Materia Prima</h1>
-            <p>Registro de entradas de inventario.</p>
-        </div>
+        <h1>Recepción de Materia Prima</h1>
 
-        <!-- KPI -->
-
-        <div class="kpis">
-
-            <div class="kpi">
-                <h2>245</h2>
-                <span>Recepciones Mes</span>
-            </div>
-
-            <div class="kpi">
-                <h2>38</h2>
-                <span>Proveedores</span>
-            </div>
-
-            <div class="kpi">
-                <h2>12,340</h2>
-                <span>Cantidad Recibida</span>
-            </div>
-
-            <div class="kpi">
-                <h2>18</h2>
-                <span>Lotes Hoy</span>
-            </div>
-
-        </div>
+        <p class="sub">
+            Registra lo que llega a la planta y consúltalo cuando lo necesites.
+        </p>
 
         <!-- FORMULARIO -->
 
@@ -267,10 +228,22 @@ tr:nth-child(even){
 
                 <label>
                     Producto (Código - Nombre)
+
                     <input
                         id="producto"
-                        placeholder="Ej: 11882 - ALMIDON">
+                        list="productos"
+                        placeholder="Código o nombre">
+
                 </label>
+
+                <datalist id="productos">
+
+                    <!-- EJEMPLOS -->
+                    <option value="11882 - ALMIDON">
+                    <option value="11853 - Mort. Tocino Praga Granel">
+                    <option value="11861 - Chile Picante">
+
+                </datalist>
 
                 <label>
                     Proveedor
@@ -283,23 +256,47 @@ tr:nth-child(even){
                 </label>
 
                 <label>
+
                     Lote
-                    <input id="lote">
+
+                    <div class="lote-group">
+
+                        <input id="lote">
+
+                        <button
+                            type="button"
+                            class="secondary"
+                            onclick="generarLote()">
+
+                            Generar
+
+                        </button>
+
+                    </div>
+
                 </label>
 
                 <label>
-                    Fecha Vencimiento (DD-MM-YYYY)
+                    Fecha Vencimiento
+
                     <input
                         id="vence"
-                        placeholder="03-11-2026">
+                        type="date">
+
                 </label>
 
                 <label>
-                    Temperatura °C
-                    <input type="number" step="0.01" id="temp">
+                    Temperatura (°C)
+
+                    <input
+                        id="temperatura"
+                        type="number"
+                        step="0.01">
+
                 </label>
 
                 <label>
+
                     Tipo Empaque
 
                     <select id="empaque">
@@ -318,52 +315,52 @@ tr:nth-child(even){
                 </label>
 
                 <label>
+
                     Cantidad
+
                     <input
+                        id="cantidad"
                         type="number"
-                        step="0.01"
-                        id="cantidad">
+                        step="0.01">
+
                 </label>
 
             </div>
 
-            <div class="info-producto">
+            <div class="info">
 
-                <strong>Producto seleccionado</strong>
+                <strong>Información del Producto</strong>
 
                 <br><br>
 
-                SKU: _________
+                SKU:
+                <span id="sku">---</span>
 
                 <br>
 
-                Nombre: _____________________
+                Nombre:
+                <span id="nombre">---</span>
 
                 <br>
 
-                Categoría: __________________
+                Categoría:
+                <span id="categoria">---</span>
 
                 <br>
 
-                Unidad: _____
+                Unidad:
+                <span id="unidad">---</span>
 
             </div>
 
             <div class="actions">
 
-                <button
-                    class="btn-primary"
-                    onclick="guardar()">
-
+                <button class="primary">
                     Registrar Recepción
-
                 </button>
 
-                <button
-                    class="btn-secondary">
-
+                <button class="secondary">
                     Limpiar
-
                 </button>
 
             </div>
@@ -379,34 +376,73 @@ tr:nth-child(even){
             <div class="form">
 
                 <label>
-                    Producto o SKU
-                    <input>
-                </label>
-
-                <label>
                     Proveedor
-                    <input>
+                    <input id="f_proveedor">
                 </label>
 
                 <label>
                     Lote
-                    <input>
+                    <input id="f_lote">
                 </label>
 
                 <label>
+
+                    Producto o SKU
+
+                    <input
+                        id="f_producto"
+                        list="productos"
+                        placeholder="Código o nombre">
+
+                </label>
+
+                <label>
+
                     Categoría
-                    <input>
+
+                    <select>
+
+                        <option value="">
+                            Todas
+                        </option>
+
+                    </select>
+
                 </label>
 
                 <label>
-                    Fecha Desde (DD-MM-YYYY)
-                    <input placeholder="01-11-2026">
+                    Fecha Desde
+
+                    <input
+                        id="fecha_desde"
+                        type="date">
+
                 </label>
 
                 <label>
-                    Fecha Hasta (DD-MM-YYYY)
-                    <input placeholder="30-11-2026">
+                    Fecha Hasta
+
+                    <input
+                        id="fecha_hasta"
+                        type="date">
+
                 </label>
+
+            </div>
+
+            <div class="actions">
+
+                <button class="primary">
+                    Buscar
+                </button>
+
+                <button class="secondary">
+                    Limpiar
+                </button>
+
+                <button class="secondary">
+                    Descargar Excel
+                </button>
 
             </div>
 
@@ -426,20 +462,20 @@ tr:nth-child(even){
                         <th>Fecha</th>
                         <th>SKU</th>
                         <th>Producto</th>
+                        <th>Categoría</th>
                         <th>Proveedor</th>
                         <th>Factura</th>
                         <th>Lote</th>
                         <th>Vence</th>
                         <th>Cantidad</th>
                         <th>Saldo</th>
-                        <th>Temp °C</th>
-                        <th>Empaque</th>
+                        <th>Temp.</th>
 
                     </tr>
 
                 </thead>
 
-                <tbody id="tabla">
+                <tbody>
 
                     <tr>
 
@@ -447,14 +483,14 @@ tr:nth-child(even){
                         <td>03-11-2026</td>
                         <td>11882</td>
                         <td>ALMIDON</td>
-                        <td>PROVEEDOR DEMO</td>
-                        <td>F-001</td>
-                        <td>L001</td>
+                        <td>MATERIA PRIMA SECA</td>
+                        <td>Proveedor Demo</td>
+                        <td>FAC-001</td>
+                        <td>261103</td>
                         <td>15-12-2026</td>
                         <td>1000</td>
                         <td>1000</td>
-                        <td>4.5</td>
-                        <td>Sacos</td>
+                        <td>25</td>
 
                     </tr>
 
@@ -470,11 +506,18 @@ tr:nth-child(even){
 
 <script>
 
-function guardar(){
+function generarLote(){
 
-    alert(
-        "Aquí luego conectaremos a sicope.db"
-    );
+    const hoy = new Date();
+
+    const lote =
+        String(hoy.getFullYear()).slice(-2) +
+        String(hoy.getMonth()+1).padStart(2,'0') +
+        String(hoy.getDate()).padStart(2,'0');
+
+    document
+        .getElementById("lote")
+        .value = lote;
 
 }
 
