@@ -1,586 +1,161 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Control Semanal BPM</title>
+<div class="card">
 
-<style>
+<div class="heart">❤️</div>
 
-*{
-    box-sizing:border-box;
-}
+<h1>Tengo una pregunta para ti...</h1>
 
-body{
-    margin:0;
-    padding:20px;
-    font-family:Segoe UI,Arial,sans-serif;
-    background:#f4f6f9;
-    color:#222;
-}
+<p class="texto">
+Desde hace algún tiempo he descubierto que los momentos simples
+se vuelven especiales cuando pienso en compartirlos contigo.
 
-.container{
-    max-width:1400px;
-    margin:auto;
-}
+Y aunque podría esperar al momento perfecto,
+prefiero crear uno contigo.
 
-h1{
-    margin-bottom:5px;
-}
-
-.sub{
-    color:#666;
-    margin-bottom:20px;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:15px;
-    margin-bottom:20px;
-}
-
-.card{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 6px rgba(0,0,0,.08);
-}
-
-.card h2{
-    margin:0;
-    font-size:32px;
-}
-
-.ok{
-    color:#14803c;
-}
-
-.pending{
-    color:#b45309;
-}
-
-.filters{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:10px;
-    margin-bottom:20px;
-}
-
-input,
-select{
-    width:100%;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:8px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    background:white;
-}
-
-th{
-    background:#0f172a;
-    color:white;
-}
-
-th,td{
-    padding:10px;
-    border:1px solid #ddd;
-}
-
-tr:nth-child(even){
-    background:#f8f8f8;
-}
-
-.badge{
-    padding:4px 8px;
-    border-radius:6px;
-    font-weight:bold;
-    font-size:12px;
-}
-
-.badge-ok{
-    background:#d8f5dc;
-    color:#116530;
-}
-
-.badge-pend{
-    background:#fff0cc;
-    color:#9a6700;
-}
-
-button.detalle{
-    padding:5px 10px;
-    cursor:pointer;
-}
-
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.55);
-    justify-content:center;
-    align-items:center;
-}
-
-.modal-content{
-    width:min(800px,95%);
-    background:white;
-    padding:20px;
-    border-radius:12px;
-}
-
-.close{
-    margin-top:15px;
-    padding:10px 15px;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>Control Semanal BPM</h1>
-
-<p class="sub">
-Seguimiento de verificaciones semanales.
+¿Me regalarías una cita? 🌹
 </p>
 
-<div class="stats">
+<div class="opciones">
 
-<div class="card">
-<h2 id="total">0</h2>
-<div>Total Registros</div>
-</div>
+<label>📅 Elige el día que más te guste</label>
+<input type="date" id="fecha">
 
-<div class="card">
-<h2 class="ok" id="ok">0</h2>
-<div>Conformes</div>
-</div>
+<label>🕒 Elige la hora</label>
+<input type="time" id="hora">
 
-<div class="card">
-<h2 class="pending" id="pend">0</h2>
-<div>Pendientes</div>
-</div>
-
-</div>
-
-<div class="filters">
-
-<input
-id="buscar"
-placeholder="Buscar código o descripción">
-
-<select id="dia">
-
-<option value="">
-Todos los días
-</option>
-
-<option>lunes</option>
-<option>martes</option>
-<option>miércoles</option>
-<option>jueves</option>
-<option>viernes</option>
-<option>sábado</option>
-<option>domingo</option>
-
-</select>
-
-<select id="estado">
-
-<option value="">
-Todos los estados
-</option>
-
-<option>OK</option>
-<option>PENDIENTE</option>
-
+<label>✨ Elige nuestro plan</label>
+<select id="plan">
+    <option>🎬 Cine romántico</option>
+    <option>🍷 Cena elegante</option>
+    <option>🏡 Picnic en una cabaña</option>
 </select>
 
 </div>
 
-<div class="card">
+<div class="botones">
 
-<table>
+<button id="si" onclick="aceptar()">
+Sí, quiero salir contigo ❤️
+</button>
 
-<thead>
-
-<tr>
-
-<th>ID</th>
-<th>Estado</th>
-<th>Fecha</th>
-<th>Día</th>
-<th>Detalle</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tabla">
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-<div id="modal" class="modal">
-
-<div class="modal-content">
-
-<h2 id="m_id"></h2>
-
-<p id="m_desc"></p>
-
-<br>
-
-<p><b>Estado:</b> <span id="m_estado"></span></p>
-
-<p><b>Fecha:</b> <span id="m_fecha"></span></p>
-
-<p><b>Día:</b> <span id="m_dia"></span></p>
-
-<button
-class="close"
-onclick="cerrarModal()">
-
-Cerrar
-
+<button id="no" onclick="rechazar()">
+No 😔
 </button>
 
 </div>
+
+<div id="mensaje"></div>
 
 </div>
 
 <script>
 
-const datos = [
+let escala = 1;
+let intentos = 0;
 
-{
-id:"4.3.1",
-descripcion:"El hielo se fabrica con agua potable, y se manipula, almacena y utiliza de modo que está protegido contra la contaminación.",
-estado:"OK",
-fecha:"26/10/2026 10:51",
-dia:"lunes"
-},
-
-{
-id:"5.3.2",
-descripcion:"El operario destacado en áreas limpias no ingresa a áreas sucias durante el proceso.",
-estado:"OK",
-fecha:"26/10/2026 21:11",
-dia:"lunes"
-},
-
-{
-id:"5.2.1",
-descripcion:"Uso de uniforme limpio y exclusivo.",
-estado:"OK",
-fecha:"26/10/2026 21:00",
-dia:"lunes"
-},
-
-{
-id:"5.1.2",
-descripcion:"Chairas y cuchillos en perfecto estado higiénico.",
-estado:"OK",
-fecha:"26/10/2026 10:30",
-dia:"lunes"
-},
-
-{
-id:"7.2",
-descripcion:"Conservación de carne entre -1°C y 7°C.",
-estado:"OK",
-fecha:"26/10/2026 10:15",
-dia:"lunes"
-},
-
-{
-id:"5.1.5",
-descripcion:"Aseo personal adecuado.",
-estado:"OK",
-fecha:"27/10/2026 21:08",
-dia:"martes"
-},
-
-{
-id:"7.7",
-descripcion:"Carne empacada almacenada por especie.",
-estado:"OK",
-fecha:"27/10/2026 21:30",
-dia:"martes"
-},
-
-{
-id:"7.8",
-descripcion:"Material de empaque protegido.",
-estado:"OK",
-fecha:"28/10/2026 22:47",
-dia:"miércoles"
-},
-
-{
-id:"8.1",
-descripcion:"Resumen de embarque presente.",
-estado:"OK",
-fecha:"28/10/2026 23:00",
-dia:"miércoles"
-},
-
-{
-id:"7.6",
-descripcion:"Buena circulación de aire en cámaras.",
-estado:"OK",
-fecha:"29/10/2026 22:00",
-dia:"jueves"
-},
-
-{
-id:"6.1.2",
-descripcion:"Capacidad de instalaciones adecuada.",
-estado:"OK",
-fecha:"29/10/2026 22:30",
-dia:"jueves"
-},
-
-{
-id:"5.3.4",
-descripcion:"Control de visitantes.",
-estado:"OK",
-fecha:"29/10/2026 22:45",
-dia:"jueves"
-},
-
-{
-id:"5.1.1",
-descripcion:"Lavado de manos obligatorio.",
-estado:"OK",
-fecha:"29/10/2026 23:00",
-dia:"jueves"
-},
-
-{
-id:"2.3.1",
-descripcion:"Lavamanos adecuados.",
-estado:"OK",
-fecha:"29/10/2026 00:00",
-dia:"jueves"
-},
-
-{
-id:"3.2.1",
-descripcion:"Uso exclusivo de equipo.",
-estado:"PENDIENTE",
-fecha:"30/10/2026 00:00",
-dia:"viernes"
-},
-
-{
-id:"2.1.1",
-descripcion:"Filtro sanitario con pila y detergente.",
-estado:"PENDIENTE",
-fecha:"30/10/2026 00:00",
-dia:"viernes"
-},
-
-{
-id:"2.1.2",
-descripcion:"Pediluvio con desinfectante activo.",
-estado:"PENDIENTE",
-fecha:"30/10/2026 00:00",
-dia:"viernes"
-},
-
-{
-id:"2.2.2",
-descripcion:"Instalaciones para lavado de manos.",
-estado:"PENDIENTE",
-fecha:"30/10/2026 00:00",
-dia:"viernes"
-},
-
-{
-id:"5.3.5",
-descripcion:"Bigote, barba y cabello protegidos.",
-estado:"PENDIENTE",
-fecha:"01/11/2026 00:00",
-dia:"domingo"
-},
-
-{
-id:"6.1.5",
-descripcion:"Descongelamiento bajo 7°C.",
-estado:"PENDIENTE",
-fecha:"01/11/2026 00:00",
-dia:"domingo"
-}
-
+const mensajes = [
+"¿Segura? 🥺",
+"Podría ser una noche muy bonita ❤️",
+"Prometo hacerte sonreír 😊",
+"Vamos... piénsalo otra vez 🌹",
+"¿Y si resulta ser tu cita favorita? ✨",
+"Mi corazón acaba de recibir daño crítico 💔",
+"Creo que el botón correcto es el de Sí 😏",
+"Última oportunidad para salvar mi corazón ❤️"
 ];
 
-function actualizarResumen(){
+function rechazar(){
 
-document.getElementById("total").textContent = datos.length;
+    let mensaje = document.getElementById("mensaje");
+    let btnSi = document.getElementById("si");
 
-document.getElementById("ok").textContent =
-datos.filter(x=>x.estado==="OK").length;
+    if(intentos < mensajes.length){
+        mensaje.innerHTML =
+        `<p style="margin-top:20px;color:#FFD700;font-size:1.2rem;">
+        ${mensajes[intentos]}
+        </p>`;
+    }
 
-document.getElementById("pend").textContent =
-datos.filter(x=>x.estado==="PENDIENTE").length;
+    escala += 0.25;
 
+    btnSi.style.transform =
+    `scale(${escala})`;
+
+    btnSi.style.boxShadow =
+    "0 0 30px rgba(255,215,0,.8)";
+
+    intentos++;
+
+    if(intentos >= 8){
+        document.getElementById("no").innerText =
+        "¿Estás completamente segura? 🥺";
+    }
+
+    if(intentos >= 12){
+        document.getElementById("no").style.opacity = ".4";
+    }
+
+    if(intentos >= 15){
+        document.getElementById("no").style.display = "none";
+    }
 }
 
-function render(lista){
+function aceptar(){
 
-let html='';
+    const fecha = document.getElementById("fecha").value;
+    const hora = document.getElementById("hora").value;
+    const plan = document.getElementById("plan").value;
 
-lista.forEach(x=>{
+    if(!fecha || !hora){
+        alert("❤️ Elige una fecha y una hora primero.");
+        return;
+    }
 
-html += `
-<tr>
+    document.body.innerHTML = `
+    <div style="
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+        padding:40px;
+        background:linear-gradient(135deg,#4b0f24,#6e1631,#a71d46);
+        color:white;
+        font-family:Segoe UI;
+    ">
+        <div>
 
-<td>${x.id}</td>
+        <h1 style="
+            font-size:4rem;
+            margin-bottom:20px;">
+            ❤️ ¡Aceptaste! ❤️
+        </h1>
 
-<td>
+        <p style="
+            font-size:1.5rem;
+            line-height:1.8;">
+            Entonces tenemos una cita.
+            <br><br>
+            📅 ${fecha}
+            <br>
+            🕒 ${hora}
+            <br>
+            ✨ ${plan}
+        </p>
 
-<span class="badge ${x.estado==='OK'?'badge-ok':'badge-pend'}">
+        <br>
 
-${x.estado}
+        <p style="
+            font-size:1.3rem;
+            max-width:700px;">
+            Gracias por darme la oportunidad
+            de crear un recuerdo bonito contigo.
+            Prometo hacer que cada minuto
+            valga la pena. 🌹
+        </p>
 
-</span>
-
-</td>
-
-<td>${x.fecha}</td>
-
-<td>${x.dia}</td>
-
-<td>
-
-<button
-class="detalle"
-onclick="verDetalle('${x.id}')">
-
-Ver
-
-</button>
-
-</td>
-
-</tr>
-`;
-
-});
-
-document.getElementById("tabla").innerHTML=html;
-
+        </div>
+    </div>
+    `;
 }
-
-function aplicarFiltros(){
-
-const texto =
-document.getElementById("buscar")
-.value
-.toLowerCase();
-
-const dia =
-document.getElementById("dia")
-.value
-.toLowerCase();
-
-const estado =
-document.getElementById("estado")
-.value
-.toUpperCase();
-
-const resultado = datos.filter(x=>{
-
-const t =
-
-x.id.toLowerCase().includes(texto)
-||
-x.descripcion.toLowerCase().includes(texto);
-
-const d =
-!dia || x.dia===dia;
-
-const e =
-!estado || x.estado===estado;
-
-return t && d && e;
-
-});
-
-render(resultado);
-
-}
-
-function verDetalle(id){
-
-const r =
-datos.find(x=>x.id===id);
-
-document.getElementById("m_id")
-.innerText=r.id;
-
-document.getElementById("m_desc")
-.innerText=r.descripcion;
-
-document.getElementById("m_estado")
-.innerText=r.estado;
-
-document.getElementById("m_fecha")
-.innerText=r.fecha;
-
-document.getElementById("m_dia")
-.innerText=r.dia;
-
-document.getElementById("modal")
-.style.display="flex";
-
-}
-
-function cerrarModal(){
-
-document.getElementById("modal")
-.style.display="none";
-
-}
-
-document
-.getElementById("buscar")
-.addEventListener(
-"keyup",
-aplicarFiltros
-);
-
-document
-.getElementById("dia")
-.addEventListener(
-"change",
-aplicarFiltros
-);
-
-document
-.getElementById("estado")
-.addEventListener(
-"change",
-aplicarFiltros
-);
-
-actualizarResumen();
-render(datos);
 
 </script>
-
-</body>
-</html>
